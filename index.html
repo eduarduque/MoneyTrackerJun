@@ -6,22 +6,27 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Money" />
-  <meta name="theme-color" content="#0f0f0f" />
-  <meta name="description" content="Lightweight personal money tracker" />
+  <meta name="theme-color" content="#0a0a0c" />
+  <meta name="description" content="Obsidian-grade lightweight personal money tracker" />
   <title>Money Tracker</title>
+
+  <!-- Google Font: Outfit for high-end typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Inline PWA manifest -->
   <script>
     const manifestData = {
       name: "Money Tracker",
       short_name: "Money",
-      description: "Lightweight personal money tracker",
+      description: "Obsidian-grade personal money tracker",
       start_url: "./",
       display: "standalone",
-      background_color: "#0f0f0f",
-      theme_color: "#0f0f0f",
+      background_color: "#0a0a0c",
+      theme_color: "#0a0a0c",
       icons: [
-        { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2322c55e'/%3E%3Ctext y='.9em' font-size='80' x='10'%3E💵%3C/text%3E%3C/svg%3E", sizes: "any", type: "image/svg+xml" }
+        { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%2310b981'/%3E%3Ctext y='.9em' font-size='70' x='15'%3E💵%3C/text%3E%3C/svg%3E", sizes: "any", type: "image/svg+xml" }
       ]
     };
     const blob = new Blob([JSON.stringify(manifestData)], { type: "application/json" });
@@ -30,340 +35,288 @@
   </script>
 
   <style>
+    /* ── Design System Variables (design.md) ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #0f0f0f;
-      --surface:  #1a1a1a;
-      --surface2: #242424;
-      --border:   #2e2e2e;
-      --text:     #f0f0f0;
-      --muted:    #888;
-      --green:    #22c55e;
-      --red:      #ef4444;
-      --blue:     #3b82f6;
-      --amber:    #f59e0b;
-      --radius:   14px;
-      --safe-b:   env(safe-area-inset-bottom, 0px);
+      --bg: #0a0a0c;
+      --surface: rgba(20, 20, 24, 0.65);
+      --surface-solid: #141418;
+      --surface-hover: #202026;
+      --border: rgba(255, 255, 255, 0.06);
+      --border-focus: rgba(255, 255, 255, 0.15);
+      --text-primary: #f4f4f5;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      
+      /* Accent Signals */
+      --green: #10b981;
+      --green-glow: rgba(16, 185, 129, 0.12);
+      --red: #f43f5e;
+      --red-glow: rgba(244, 63, 94, 0.12);
+      --blue: #3b82f6;
+      --blue-glow: rgba(59, 130, 246, 0.15);
+      --violet: #8b5cf6;
+      --violet-glow: rgba(139, 92, 246, 0.15);
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.12);
+      
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-pill: 999px;
+      --safe-b: env(safe-area-inset-bottom, 16px);
+      --font: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     html, body {
       height: 100%;
       background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #14141c 0%, #0a0a0c 100%);
+      color: var(--text-primary);
+      font-family: var(--font);
       font-size: 16px;
       line-height: 1.5;
       overflow: hidden;
     }
 
-    /* ── Layout ── */
+    /* ── App Shell Layout ── */
     #app {
       display: flex;
       flex-direction: column;
       height: 100dvh;
       max-width: 480px;
       margin: 0 auto;
+      position: relative;
+      border-right: 1px solid rgba(255, 255, 255, 0.02);
+      border-left: 1px solid rgba(255, 255, 255, 0.02);
     }
 
-    /* ── Header ── */
+    /* ── Header Area ── */
     header {
-      padding: 20px 16px 0;
+      padding: 20px 16px 10px;
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .app-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .app-logo span {
+      font-size: 20px;
     }
 
     .app-title {
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 14px;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
     }
 
-    /* ── Account pill row ── */
-    .account-scroll {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-      scrollbar-width: none;
-    }
-    .account-scroll::-webkit-scrollbar { display: none; }
-
-    .acct-pill {
-      flex-shrink: 0;
-      padding: 7px 14px;
-      border-radius: 999px;
-      border: 1.5px solid var(--border);
-      background: var(--surface);
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all .15s;
-      white-space: nowrap;
-    }
-    .acct-pill.active {
-      border-color: var(--green);
-      color: var(--green);
-      background: rgba(34,197,94,.1);
-    }
-    .acct-pill.add-btn {
-      border-style: dashed;
-      color: var(--muted);
-    }
-    .acct-pill.group-pill {
-      font-weight: 600;
-    }
-    .sub-scroll {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding: 6px 0 2px 10px;
-      border-left: 2px solid var(--border);
-      margin-top: 6px;
-      scrollbar-width: none;
-    }
-    .sub-scroll::-webkit-scrollbar { display: none; }
-    .acct-pill.sub {
-      font-size: 12px;
-      padding: 5px 11px;
-      color: var(--muted);
-    }
-
-    /* ── Balance card ── */
-    .balance-card {
-      margin: 16px 0 0;
-      padding: 20px;
-      background: var(--surface);
-      border-radius: var(--radius);
+    .header-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
       border: 1px solid var(--border);
-      position: relative;
-    }
-
-    .balance-label {
-      font-size: 12px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      margin-bottom: 6px;
-    }
-
-    .balance-row {
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-size: 18px;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: center;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
     }
 
-    .balance-amount {
-      font-size: 36px;
-      font-weight: 700;
-      letter-spacing: -.02em;
-      color: var(--text);
-      flex: 1;
+    .header-btn:hover {
+      border-color: var(--border-focus);
+      color: var(--text-primary);
+      background: var(--surface-hover);
     }
 
-    .balance-amount.negative { color: var(--red); }
-
-    .balance-edit-btn {
-      padding: 6px 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--muted);
-      font-size: 12px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all .15s;
-    }
-    .balance-edit-btn:active { opacity: .7; }
-
-    .acct-actions {
-      position: absolute;
-      top: 12px;
-      right: 14px;
-      display: flex;
-      gap: 6px;
+    .header-btn:active {
+      transform: scale(0.95);
     }
 
-    .icon-btn {
-      width: 28px; height: 28px;
-      border-radius: 8px;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      font-size: 16px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background .15s;
-    }
-    .icon-btn:active { background: var(--surface2); }
-
-    /* ── Tabs ── */
-    .tabs {
-      display: flex;
-      margin-top: 16px;
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 4px;
-      border: 1px solid var(--border);
-    }
-
-    .tab {
-      flex: 1;
-      padding: 9px;
-      border-radius: 10px;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .tab.active {
-      background: var(--surface2);
-      color: var(--text);
-    }
-
-    /* ── Scroll area ── */
-    .scroll-area {
+    /* ── Main Content Area ── */
+    .main-scroll {
       flex: 1;
       overflow-y: auto;
-      padding: 12px 16px;
-      padding-bottom: calc(16px + var(--safe-b));
-      scrollbar-width: thin;
-      scrollbar-color: var(--border) transparent;
-    }
-
-    /* ── Add form ── */
-    .form-card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
       padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      padding-bottom: calc(100px + var(--safe-b)); /* Extra padding for sticky footer + FAB */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .main-scroll::-webkit-scrollbar {
+      display: none;
     }
 
-    .type-toggle {
-      display: flex;
-      background: var(--surface2);
-      border-radius: 10px;
-      padding: 3px;
+    /* ── Cards & Glassmorphism ── */
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(16px) saturate(120%);
+      -webkit-backdrop-filter: blur(16px) saturate(120%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 16px;
+      position: relative;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
     }
 
-    .type-btn {
-      flex: 1;
-      padding: 9px;
-      border-radius: 8px;
-      border: none;
-      background: transparent;
-      font-size: 13px;
+    /* ── Net Worth Overview ── */
+    .net-worth-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    .net-worth-amount {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+    .net-worth-amount.negative {
+      color: var(--red);
+    }
+
+    .net-worth-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn-sm {
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary);
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      transition: all .15s;
-      color: var(--muted);
+      transition: all 0.15s;
     }
-    .type-btn.income.active  { background: rgba(34,197,94,.2);  color: var(--green); }
-    .type-btn.expense.active { background: rgba(239,68,68,.2);  color: var(--red);   }
+    .action-btn-sm:hover {
+      border-color: var(--border-focus);
+      background: var(--surface-hover);
+      color: var(--text-primary);
+    }
 
-    .field-group {
+    /* ── Horizontal Accounts Scroll ── */
+    .section-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 0 4px;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .section-link {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--blue);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .acct-grid {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: none;
+      margin-bottom: 20px;
+    }
+    .acct-grid::-webkit-scrollbar {
+      display: none;
+    }
+
+    .acct-card {
+      flex-shrink: 0;
+      width: 140px;
+      height: 110px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
-
-    label {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 500;
+    .acct-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--blue);
+      transform: translateY(-2px);
     }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 12px 14px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      font-size: 16px;
-      font-family: inherit;
-      outline: none;
-      transition: border-color .15s;
-      -webkit-appearance: none;
-    }
-    input:focus, select:focus, textarea:focus {
+    .acct-card.active {
+      background: var(--blue-glow);
       border-color: var(--blue);
     }
-
-    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-    .submit-btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      background: var(--green);
-      color: #000;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity .15s;
+    .acct-card.add-new {
+      border-style: dashed;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
     }
-    .submit-btn:active { opacity: .8; }
-
-    /* ── Category chips ── */
-    .category-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
+    .acct-card.add-new span {
+      font-size: 24px;
+      margin-bottom: 4px;
     }
-    .cat-chip {
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1.5px solid var(--border);
-      background: var(--surface2);
-      color: var(--muted);
+    .acct-card.add-new div {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .acct-card-name {
       font-size: 13px;
-      cursor: pointer;
-      transition: all .15s;
+      font-weight: 600;
+      color: var(--text-secondary);
       white-space: nowrap;
-      -webkit-tap-highlight-color: transparent;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .cat-chip.active {
-      border-color: var(--blue);
-      color: var(--blue);
-      background: rgba(59,130,246,.12);
-    }
-    .cat-badge {
-      display: inline-block;
-      padding: 1px 7px;
-      border-radius: 999px;
-      background: var(--surface2);
-      color: var(--muted);
-      font-size: 11px;
-      margin-left: 5px;
-      vertical-align: middle;
-    }
-
-    /* ── Transaction list ── */
-    .section-header {
-      font-size: 12px;
-      color: var(--muted);
+    .acct-card-group {
+      font-size: 10px;
+      color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: .06em;
-      padding: 4px 0 8px;
+      letter-spacing: 0.04em;
+    }
+    .acct-card-balance {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+    .acct-card-balance.negative {
+      color: var(--red);
     }
 
+    /* ── Transactions List ── */
     .tx-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
     .tx-item {
@@ -371,110 +324,306 @@
       align-items: center;
       gap: 12px;
       padding: 14px;
-      background: var(--surface);
-      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.01);
       border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       cursor: pointer;
-      transition: border-color .15s;
-      -webkit-tap-highlight-color: transparent;
+      transition: all 0.15s ease;
     }
-    .tx-item:active { border-color: var(--blue); }
+    .tx-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--border-focus);
+    }
 
-    .tx-icon {
-      width: 40px; height: 40px;
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
+    .tx-icon-box {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
       flex-shrink: 0;
     }
-    .tx-icon.income  { background: rgba(34,197,94,.15); }
-    .tx-icon.expense { background: rgba(239,68,68,.15); }
+    .tx-icon-box.income { background: var(--green-glow); color: var(--green); }
+    .tx-icon-box.expense { background: var(--red-glow); color: var(--red); }
+    .tx-icon-box.transfer { background: var(--violet-glow); color: var(--violet); }
 
-    .tx-info { flex: 1; min-width: 0; }
+    .tx-details {
+      flex: 1;
+      min-width: 0;
+    }
     .tx-desc {
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
+      color: var(--text-primary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .tx-meta {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 1px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-
+    .tx-acct-pill {
+      padding: 1px 6px;
+      border-radius: var(--radius-pill);
+      background: rgba(255,255,255,0.04);
+      font-size: 9px;
+      color: var(--text-muted);
+    }
     .tx-amount {
       font-size: 15px;
-      font-weight: 600;
-      flex-shrink: 0;
+      font-weight: 700;
+      text-align: right;
     }
-    .tx-amount.income  { color: var(--green); }
-    .tx-amount.expense { color: var(--red);   }
+    .tx-amount.income { color: var(--green); }
+    .tx-amount.expense { color: var(--red); }
+    .tx-amount.transfer { color: var(--violet); }
 
     .empty-state {
       text-align: center;
-      color: var(--muted);
-      padding: 48px 0;
+      color: var(--text-muted);
+      padding: 40px 10px;
       font-size: 14px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.005);
     }
-    .empty-state .emoji { font-size: 40px; display: block; margin-bottom: 10px; }
+    .empty-state-emoji {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 8px;
+    }
 
-    /* ── Settings tab ── */
-    .settings-section {
+    /* ── Sticky Bottom Nav Bar ── */
+    nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: calc(75px + var(--safe-b));
+      background: rgba(10, 10, 12, 0.85);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      padding: 10px 16px 0;
+      z-index: 90;
+    }
+
+    .nav-tab {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+      width: 80px;
+      transition: color 0.2s;
+    }
+    .nav-tab.active {
+      color: var(--blue);
+    }
+    .nav-tab span.icon {
+      font-size: 20px;
+    }
+    .nav-tab span.label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
-    .settings-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-
-    .settings-row {
+    /* ── Floating Action Button (FAB) ── */
+    .fab-btn {
+      position: absolute;
+      bottom: calc(40px + var(--safe-b));
+      left: 50%;
+      transform: translateX(-50%);
+      width: 58px;
+      height: 58px;
+      border-radius: var(--radius-pill);
+      border: none;
+      background: var(--blue);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+      color: white;
+      font-size: 28px;
+      font-weight: 300;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 16px;
-      border-bottom: 1px solid var(--border);
-      gap: 12px;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 95;
+      transition: all 0.2s ease;
     }
-    .settings-row:last-child { border-bottom: none; }
+    .fab-btn:hover {
+      background: #2563eb;
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
+      transform: translateX(-50%) translateY(-2px);
+    }
+    .fab-btn:active {
+      transform: translateX(-50%) scale(0.95);
+    }
 
-    .settings-label { font-size: 14px; font-weight: 500; }
-    .settings-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-    .action-btn {
-      padding: 8px 16px;
-      border-radius: 10px;
+    /* ── Transaction Search & Filter Row ── */
+    .filter-sticky {
+      position: sticky;
+      top: -16px;
+      z-index: 10;
+      background: var(--bg);
+      padding: 4px 0 12px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.02);
+    }
+    .search-container {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px 14px;
       border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--text);
-      font-size: 13px;
-      font-weight: 500;
+      border-radius: var(--radius-md);
+      background: var(--surface-solid);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--blue);
+    }
+    .filter-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
-      transition: all .15s;
+      transition: all 0.15s;
     }
-    .action-btn:active { opacity: .7; }
-    .action-btn.danger { border-color: var(--red); color: var(--red); }
+    .filter-chip.active {
+      background: var(--blue-glow);
+      border-color: var(--blue);
+      color: var(--blue);
+    }
 
-    /* ── Modal overlay ── */
+    /* ── Date Group Header ── */
+    .date-divider {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 16px 0 8px 4px;
+    }
+
+    /* ── Canvas Donut Chart ── */
+    .chart-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 10px 0 20px;
+    }
+    canvas {
+      max-width: 100%;
+      height: auto;
+    }
+    .chart-legend {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 16px;
+      width: 100%;
+      margin-top: 16px;
+      font-size: 12px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .legend-name {
+      color: var(--text-secondary);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .legend-val {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ── Budget List ── */
+    .budget-card-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .budget-card-item:last-child {
+      border-bottom: none;
+    }
+    .budget-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .budget-name { font-weight: 600; }
+    .budget-amount { color: var(--text-secondary); }
+    .budget-progress-bg {
+      height: 6px;
+      background: var(--surface-hover);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .budget-progress-fill {
+      height: 100%;
+      border-radius: var(--radius-pill);
+      transition: width 0.3s ease;
+    }
+    .budget-progress-fill.safe { background: var(--green); }
+    .budget-progress-fill.warning { background: var(--amber); }
+    .budget-progress-fill.danger { background: var(--red); }
+
+    /* ── Overlays & Sheets ── */
     .overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.7);
-      backdrop-filter: blur(4px);
-      z-index: 100;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 200;
       display: flex;
       align-items: flex-end;
-      padding: 0 0 var(--safe-b);
+      padding: 0;
       opacity: 0;
       pointer-events: none;
-      transition: opacity .2s;
+      transition: opacity 0.25s ease;
     }
     .overlay.open {
       opacity: 1;
@@ -485,68 +634,207 @@
       width: 100%;
       max-width: 480px;
       margin: 0 auto;
-      background: var(--surface);
+      background: var(--surface-solid);
+      border-top: 1px solid var(--border);
       border-radius: 20px 20px 0 0;
-      border: 1px solid var(--border);
-      padding: 20px 16px;
-      padding-bottom: calc(20px + var(--safe-b));
-      transform: translateY(30px);
-      transition: transform .2s;
+      padding: 24px 20px calc(24px + var(--safe-b));
+      transform: translateY(100%);
+      transition: transform 0.25s cubic-bezier(0.32, 0.94, 0.6, 1);
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 16px;
+      max-height: 85dvh;
+      overflow-y: auto;
     }
-    .overlay.open .sheet { transform: translateY(0); }
+    .overlay.open .sheet {
+      transform: translateY(0);
+    }
 
     .sheet-handle {
-      width: 40px; height: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      margin: 0 auto -6px;
+      width: 36px;
+      height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: var(--radius-pill);
+      margin: -10px auto 10px;
+      flex-shrink: 0;
     }
 
     .sheet-title {
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 700;
       text-align: center;
+      margin-bottom: 6px;
     }
 
-    .sheet-actions {
+    /* ── Form Elements ── */
+    .type-toggle {
+      display: flex;
+      background: rgba(0,0,0,0.25);
+      border-radius: var(--radius-md);
+      padding: 3px;
+      border: 1px solid var(--border);
+    }
+    .type-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 9px;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+    }
+    .type-btn.income.active { background: var(--green-glow); color: var(--green); }
+    .type-btn.expense.active { background: var(--red-glow); color: var(--red); }
+    .type-btn.transfer.active { background: var(--violet-glow); color: var(--violet); }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.15s;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--blue);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .chip-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .chip {
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .chip.active {
+      border-color: var(--blue);
+      background: var(--blue-glow);
+      color: var(--blue);
+    }
+
+    .btn-group {
       display: flex;
       gap: 8px;
+      margin-top: 10px;
     }
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-primary { background: var(--blue); color: white; }
+    .btn-primary:active { background: #2563eb; }
+    .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:active { background: rgba(255, 255, 255, 0.08); }
+    .btn-danger { background: var(--red-glow); color: var(--red); border: 1px solid rgba(244, 63, 94, 0.2); }
+    .btn-danger:active { background: rgba(244, 63, 94, 0.25); }
 
-    .btn-primary {
-      flex: 1;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      background: var(--blue);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
+    /* ── Close Month / Reconciliation Report UI ── */
+    .reconcile-checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 12px 0;
     }
-    .btn-danger {
-      padding: 14px 18px;
-      border-radius: 12px;
-      border: none;
-      background: rgba(239,68,68,.15);
-      color: var(--red);
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-cancel {
-      flex: 1;
-      padding: 14px;
-      border-radius: 12px;
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: rgba(255,255,255,0.01);
       border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      font-size: 15px;
-      font-weight: 500;
+      border-radius: var(--radius-md);
       cursor: pointer;
+      transition: all 0.15s;
+    }
+    .checklist-item:hover {
+      background: rgba(255,255,255,0.03);
+    }
+    .checklist-item.cleared {
+      border-color: var(--green);
+      background: var(--green-glow);
+    }
+    .checklist-cb {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 2px solid var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: white;
+    }
+    .checklist-item.cleared .checklist-cb {
+      border-color: var(--green);
+      background: var(--green);
+    }
+    .checklist-label {
+      flex: 1;
+      font-size: 13px;
+    }
+    .checklist-label span {
+      display: block;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+    .report-narrative {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-family: monospace;
+      color: #34d399;
+      white-space: pre-wrap;
+      max-height: 180px;
+      overflow-y: auto;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -554,55 +842,96 @@
 
 <div id="app">
   <header>
-    <div class="app-title">Money Tracker</div>
-    <div id="acctPills"></div>
-    <div class="balance-card" id="balanceCard">
-      <div class="acct-actions">
-        <button class="icon-btn" onclick="openRenameAccount()" title="Rename account">✏️</button>
-        <button class="icon-btn" onclick="confirmDeleteAccount()" title="Delete account">🗑️</button>
-      </div>
-      <div class="balance-label" id="balanceLabel">Total Balance</div>
-      <div class="balance-row">
-        <div class="balance-amount" id="balanceAmount">$0.00</div>
-        <button class="balance-edit-btn" onclick="openCorrectBalance()">Correct Balance</button>
-      </div>
+    <div class="app-logo">
+      <span>💵</span>
+      <div class="app-title" id="activeFilterLabel">Money Tracker</div>
     </div>
-    <div class="tabs" style="margin: 12px 0 0;">
-      <button class="tab active" onclick="setTab('add')">+ Add</button>
-      <button class="tab" onclick="setTab('txns')">Transactions</button>
-      <button class="tab" onclick="setTab('settings')">Settings</button>
-    </div>
+    <button class="header-btn" onclick="openSettings()" title="Settings">⚙️</button>
   </header>
 
-  <div class="scroll-area" id="mainContent"></div>
+  <!-- Main Scrollable Content -->
+  <div class="main-scroll" id="mainContent"></div>
+
+  <!-- Bottom Navigation Bar -->
+  <nav>
+    <button class="nav-tab active" id="tab-overview" onclick="setTab('overview')">
+      <span class="icon">🏠</span>
+      <span class="label">Overview</span>
+    </button>
+    <div style="width: 60px;"></div> <!-- Spacer for FAB -->
+    <button class="nav-tab" id="tab-transactions" onclick="setTab('transactions')">
+      <span class="icon">📜</span>
+      <span class="label">Ledger</span>
+    </button>
+    <button class="nav-tab" id="tab-analytics" onclick="setTab('analytics')">
+      <span class="icon">📊</span>
+      <span class="label">Analytics</span>
+    </button>
+  </nav>
+
+  <!-- Centered Floating Action Button (FAB) -->
+  <button class="fab-btn" onclick="openAddTransaction()" title="Add transaction">+</button>
 </div>
 
-<!-- New Account Sheet -->
-<div class="overlay" id="newAcctOverlay" onclick="closeNewAcctIfBg(event)">
+<!-- Add Transaction Sheet Overlay -->
+<div class="overlay" id="addOverlay" onclick="closeOverlayIfBg(event, 'addOverlay')">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">New Account</div>
+    <div class="sheet-title" id="addSheetTitle">Log Transaction</div>
+    
+    <div class="type-toggle">
+      <button class="type-btn income" id="addTypeIncome" onclick="setAddType('income')">↑ Income</button>
+      <button class="type-btn expense active" id="addTypeExpense" onclick="setAddType('expense')">↓ Expense</button>
+      <button class="type-btn transfer" id="addTypeTransfer" onclick="setAddType('transfer')">⇄ Transfer</button>
+    </div>
+
     <div class="field-group">
-      <label>Account Name</label>
-      <input type="text" id="newAcctName" placeholder="e.g. Checking, Savings, Cash..." />
+      <label class="field-label">Amount ($)</label>
+      <input type="number" id="addAmount" placeholder="0.00" step="0.01" min="0" inputmode="decimal" style="font-size:24px; font-weight:700; text-align:center;" />
     </div>
+
+    <!-- Multi-Account row depending on Transfer state -->
+    <div class="form-row" id="accountSelectionRow">
+      <div class="field-group" id="primaryAccountCol" style="grid-column: span 2;">
+        <label class="field-label" id="accountSelectorLabel">Account</label>
+        <select id="addAccount"></select>
+      </div>
+      <div class="field-group" id="toAccountCol" style="display:none;">
+        <label class="field-label">To Account</label>
+        <select id="addToAccount"></select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="field-group">
+        <label class="field-label">Date</label>
+        <input type="date" id="addDate" />
+      </div>
+      <div class="field-group" id="categoryFieldCol">
+        <label class="field-label">Category</label>
+        <select id="addCategorySelector" onchange="syncAddCategoryChip()"></select>
+      </div>
+    </div>
+
+    <div class="field-group" id="addCategoryChipsCol">
+      <label class="field-label">Quick Category</label>
+      <div class="chip-container" id="addCategoryChips"></div>
+    </div>
+
     <div class="field-group">
-      <label>Group</label>
-      <select id="newAcctParent"></select>
+      <label class="field-label">Description / Notes</label>
+      <input type="text" id="addDesc" placeholder="e.g. Weekly Groceries, Payroll..." />
     </div>
-    <div class="field-group" id="newGroupNameField" style="display:none">
-      <label>New Group Name</label>
-      <input type="text" id="newGroupName" placeholder="e.g. Chase, Bank of America..." />
-    </div>
-    <div class="sheet-actions">
-      <button class="btn-cancel" onclick="closeNewAcct()">Cancel</button>
-      <button class="btn-primary" onclick="confirmNewAcct()">Add</button>
+
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="closeOverlay('addOverlay')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitTransaction()">Add Transaction</button>
     </div>
   </div>
 </div>
 
-<!-- Edit Transaction Sheet -->
-<div class="overlay" id="editOverlay" onclick="closeEditIfBg(event)">
+<!-- Edit Transaction Sheet Overlay -->
+<div class="overlay" id="editOverlay" onclick="closeOverlayIfBg(event, 'editOverlay')">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title">Edit Transaction</div>
@@ -610,628 +939,1403 @@
     <div class="type-toggle">
       <button class="type-btn income" id="editTypeIncome" onclick="setEditType('income')">↑ Income</button>
       <button class="type-btn expense" id="editTypeExpense" onclick="setEditType('expense')">↓ Expense</button>
+      <button class="type-btn transfer" id="editTypeTransfer" onclick="setEditType('transfer')">⇄ Transfer</button>
     </div>
 
     <div class="field-group">
-      <label>Amount ($)</label>
-      <input type="number" id="editAmount" placeholder="0.00" step="0.01" min="0" inputmode="decimal" />
+      <label class="field-label">Amount ($)</label>
+      <input type="number" id="editAmount" placeholder="0.00" step="0.01" min="0" inputmode="decimal" style="font-size:24px; font-weight:700; text-align:center;" />
     </div>
 
-    <div class="row-2">
-      <div class="field-group">
-        <label>Account</label>
+    <div class="form-row" id="editAccountSelectionRow">
+      <div class="field-group" id="editPrimaryAccountCol" style="grid-column: span 2;">
+        <label class="field-label" id="editAccountSelectorLabel">Account</label>
         <select id="editAccount"></select>
       </div>
+      <div class="field-group" id="editToAccountCol" style="display:none;">
+        <label class="field-label">To Account</label>
+        <select id="editToAccount"></select>
+      </div>
+    </div>
+
+    <div class="form-row">
       <div class="field-group">
-        <label>Date</label>
+        <label class="field-label">Date</label>
         <input type="date" id="editDate" />
+      </div>
+      <div class="field-group" id="editCategoryFieldCol">
+        <label class="field-label">Category</label>
+        <select id="editCategorySelector" onchange="syncEditCategoryChip()"></select>
+      </div>
+    </div>
+
+    <div class="field-group" id="editCategoryChipsCol">
+      <label class="field-label">Quick Category</label>
+      <div class="chip-container" id="editCategoryChips"></div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Description / Notes</label>
+      <input type="text" id="editDesc" placeholder="Notes..." />
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="closeOverlay('editOverlay')">Cancel</button>
+      <button class="btn btn-danger" onclick="deleteTransaction()">Delete</button>
+      <button class="btn btn-primary" onclick="saveEditTransaction()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Sheet Overlay -->
+<div class="overlay" id="settingsOverlay" onclick="closeOverlayIfBg(event, 'settingsOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Settings & Data</div>
+
+    <div class="field-group">
+      <label class="field-label">Database Controls</label>
+      <div style="display:flex; flex-direction:column; gap: 8px;">
+        <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="triggerDemoData()">🚀 Load Realistic Demo Data</button>
+        <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="exportData()">📤 Export Database (JSON)</button>
+        <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="triggerImport()">📥 Import Database (JSON)</button>
+        <button class="btn btn-danger" style="justify-content: flex-start;" onclick="clearAllData()">⚠️ Full Database Reset (Zero Values)</button>
       </div>
     </div>
 
     <div class="field-group">
-      <label>Category</label>
-      <div class="category-chips" id="editCategoryChips"></div>
+      <label class="field-label">Account Management</label>
+      <div style="display:flex; gap: 8px;">
+        <button class="btn btn-secondary" onclick="openNewAccountDialog()">+ New Account</button>
+        <button class="btn btn-secondary" id="manageAcctsEditBtn" onclick="triggerAccountSettingsEdit()" disabled>Rename Selected</button>
+      </div>
+      <div style="display:flex; gap: 8px; margin-top: 4px;">
+        <button class="btn btn-danger" id="manageAcctsDelBtn" onclick="triggerAccountSettingsDelete()" disabled style="flex:1;">Delete Current Account</button>
+      </div>
     </div>
 
-    <div class="field-group">
-      <label>Description (optional notes)</label>
-      <input type="text" id="editDesc" placeholder="Extra notes..." />
-    </div>
-
-    <div class="sheet-actions">
-      <button class="btn-cancel" onclick="closeEdit()">Cancel</button>
-      <button class="btn-danger" onclick="deleteTransaction()">Delete</button>
-      <button class="btn-primary" onclick="saveEditTransaction()">Save</button>
-    </div>
+    <button class="btn btn-secondary" onclick="closeOverlay('settingsOverlay')">Close</button>
   </div>
 </div>
 
-<!-- Generic prompt sheet -->
-<div class="overlay" id="promptOverlay" onclick="closePromptIfBg(event)">
+<!-- Account Creation Drawer Overlay -->
+<div class="overlay" id="newAcctOverlay" onclick="closeOverlayIfBg(event, 'newAcctOverlay')">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title" id="promptTitle">Enter value</div>
+    <div class="sheet-title">New Account</div>
+
     <div class="field-group">
-      <label id="promptLabel">Value</label>
-      <input id="promptInput" type="text" />
+      <label class="field-label">Account Name</label>
+      <input type="text" id="newAcctName" placeholder="e.g. Chase Checking, Cash Wallet..." />
     </div>
-    <div class="sheet-actions">
-      <button class="btn-cancel" onclick="closePrompt()">Cancel</button>
-      <button class="btn-primary" onclick="confirmPrompt()">Confirm</button>
+
+    <div class="field-group">
+      <label class="field-label">Account Group / Category</label>
+      <select id="newAcctParent" onchange="toggleNewGroupNameField()">
+        <option value="">— Standalone Account —</option>
+        <option value="__new__">+ Create new group…</option>
+      </select>
+    </div>
+
+    <div class="field-group" id="newGroupNameField" style="display:none">
+      <label class="field-label">New Group Name</label>
+      <input type="text" id="newGroupName" placeholder="e.g. Chase Bank, Credit Cards..." />
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="closeOverlay('newAcctOverlay')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmNewAcct()">Create Account</button>
     </div>
   </div>
 </div>
 
+<!-- Generic Prompt Sheet Drawer -->
+<div class="overlay" id="promptOverlay" onclick="closeOverlayIfBg(event, 'promptOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="promptTitle">Enter Value</div>
+    <div class="field-group">
+      <label class="field-label" id="promptLabel">Value</label>
+      <input id="promptInput" type="text" />
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="closeOverlay('promptOverlay')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmPrompt()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Month-End Report Overlay Drawer -->
+<div class="overlay" id="monthReportOverlay" onclick="closeOverlayIfBg(event, 'monthReportOverlay')">
+  <div class="sheet" style="max-height: 90dvh;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="monthReportTitle">Month-End Close Report</div>
+    
+    <div id="monthReportContent" style="display:flex; flex-direction:column; gap:14px;">
+      <!-- JavaScript will inject content here -->
+    </div>
+
+    <div class="btn-group" style="margin-top:10px;">
+      <button class="btn btn-secondary" onclick="closeOverlay('monthReportOverlay')">Close Report</button>
+      <button class="btn btn-primary" onclick="copyReportText()">Copy Narrative</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importData(event)" />
+
+<!-- ─── Core Logic Scripts ─── -->
 <script>
-// ─── State ───────────────────────────────────────────────────────────────────
+// ─── Database & State Initialization (Zero values by default) ───
+const DB_KEY = "money_tracker_db_v3";
 const DEFAULT_DATA = {
   accounts: [],
   transactions: []
 };
 
+let data = JSON.parse(localStorage.getItem(DB_KEY) || "null") || JSON.parse(JSON.stringify(DEFAULT_DATA));
+let currentAccountId = data.accounts.length > 0 ? "__total__" : null;
+let currentTab = "overview";
+
+// Active Add / Edit form states
+let addTypeState = "expense";
+let addCategoryState = "";
+let editTypeState = "expense";
+let editCategoryState = "";
+let editingTxId = null;
+let promptCallback = null;
+
+// Categories definitions
+const EXPENSE_CATEGORIES = [
+  "🛒 Groceries", "⛽ Gas", "🍽️ Dining", "🏠 Rent", "🛍️ Shopping",
+  "📚 Education", "🎬 Entertainment", "💊 Healthcare", "🚌 Transport",
+  "💡 Utilities", "📱 Subscriptions", "✈️ Travel", "💰 Savings", "📝 Other"
+];
+const INCOME_CATEGORIES = [
+  "💵 Paycheck", "💸 Transfer", "🎁 Gift", "💹 Investment", "🏦 Deposit", "📝 Other"
+];
+
+// Helper to format dates
 function today(offset = 0) {
   const d = new Date();
   d.setDate(d.getDate() + offset);
   return d.toISOString().slice(0, 10);
 }
 
-let data = JSON.parse(localStorage.getItem("mt_data") || "null") || JSON.parse(JSON.stringify(DEFAULT_DATA));
-let currentAccountId = data.accounts.length > 0 ? "__total__" : null;
-let currentTab = "add";
-let editingTxId = null;
-let editType = "expense";
-let promptCallback = null;
-
 function save() {
-  localStorage.setItem("mt_data", JSON.stringify(data));
+  localStorage.setItem(DB_KEY, JSON.stringify(data));
 }
 
-// ─── Derived ─────────────────────────────────────────────────────────────────
+// ─── Core Calculations / Queries ───
 function getAccount(id) { return data.accounts.find(a => a.id === id); }
-function currentAccount() { return getAccount(currentAccountId); }
-
 function leafAccounts() { return data.accounts.filter(a => !a.isGroup); }
 
 function getAccountBalance(id) {
   const acct = getAccount(id);
   if (!acct) return 0;
   if (acct.isGroup) {
-    return data.accounts.filter(a => a.parentId === id).reduce((s, a) => s + (a.balance || 0), 0);
+    return data.accounts.filter(a => a.parentId === id).reduce((sum, a) => sum + (a.balance || 0), 0);
   }
   return acct.balance || 0;
 }
 
-function leafAccountOptions(selectedId) {
-  return leafAccounts().map(a => {
-    const parent = a.parentId ? getAccount(a.parentId) : null;
-    const label = parent ? `${esc(parent.name)} › ${esc(a.name)}` : esc(a.name);
-    return `<option value="${a.id}" ${a.id === selectedId ? "selected" : ""}>${label}</option>`;
-  }).join("");
+function getNetWorth() {
+  // Sum up all leaf accounts
+  return leafAccounts().reduce((sum, a) => sum + (a.balance || 0), 0);
 }
 
-function isTotalView() { return currentAccountId === "__total__"; }
-
-function currentTxns() {
-  if (isTotalView()) {
-    return [...data.transactions].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+// Return transactions filtered by active account
+function getFilteredTransactions(acctId = currentAccountId) {
+  let list = [...data.transactions];
+  if (!acctId || acctId === "__total__") {
+    return list.sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
   }
-  const acct = currentAccount();
+  const acct = getAccount(acctId);
   if (!acct) return [];
-  let ids;
+  
   if (acct.isGroup) {
-    ids = new Set(data.accounts.filter(a => a.parentId === acct.id).map(a => a.id));
+    const childIds = new Set(data.accounts.filter(a => a.parentId === acctId).map(a => a.id));
+    return list.filter(t => childIds.has(t.accountId) || (t.type === "transfer" && childIds.has(t.toAccountId)))
+               .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
   } else {
-    ids = new Set([currentAccountId]);
+    return list.filter(t => t.accountId === acctId || (t.type === "transfer" && t.toAccountId === acctId))
+               .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
   }
-  return data.transactions
-    .filter(t => ids.has(t.accountId))
-    .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
 }
 
-// ─── Render ───────────────────────────────────────────────────────────────────
+// ─── UI Rendering Logic ───
 function render() {
-  renderPills();
-  renderBalance();
+  renderHeader();
   renderContent();
-}
-
-function renderPills() {
-  const container = document.getElementById("acctPills");
-  const acct = currentAccount();
-
-  // Determine which group's sub-accounts to show in the second row
-  let activeGroupId = null;
-  if (acct) {
-    if (acct.isGroup) activeGroupId = acct.id;
-    else if (acct.parentId) activeGroupId = acct.parentId;
-  }
-
-  // Top row: "All Accounts" + groups + standalone accounts
-  const topItems = data.accounts.filter(a => !a.parentId);
-  const totalPill = data.accounts.length
-    ? `<button class="acct-pill ${isTotalView() ? "active" : ""}" onclick="switchAccount('__total__')">All Accounts</button>`
-    : "";
-  const topPills = topItems.map(a => {
-    const isActive = !isTotalView() && (a.id === currentAccountId || acct?.parentId === a.id);
-    return `<button class="acct-pill ${isActive ? "active" : ""} ${a.isGroup ? "group-pill" : ""}" onclick="switchAccount('${a.id}')">${a.name}</button>`;
-  }).join("");
-
-  // Sub-account row
-  let subRow = "";
-  if (activeGroupId) {
-    const children = data.accounts.filter(a => a.parentId === activeGroupId);
-    const subPills = children.map(a =>
-      `<button class="acct-pill sub ${a.id === currentAccountId ? "active" : ""}" onclick="switchAccount('${a.id}')">${a.name}</button>`
-    ).join("");
-    subRow = `<div class="sub-scroll">${subPills}<button class="acct-pill sub add-btn" onclick="addAccount('${activeGroupId}')">+ Add</button></div>`;
-  }
-
-  container.innerHTML =
-    `<div class="account-scroll">${topPills}<button class="acct-pill add-btn" onclick="addAccount()">+ New</button></div>` +
-    subRow;
-}
-
-function renderBalance() {
-  const acct = currentAccount();
-  const el = document.getElementById("balanceAmount");
-  if (!acct) {
-    el.textContent = "$0.00";
-    el.className = "balance-amount";
-    document.getElementById("balanceLabel").textContent = "No accounts yet";
-    return;
-  }
-  const bal = getAccountBalance(acct.id);
-  el.textContent = fmt(bal);
-  el.className = "balance-amount" + (bal < 0 ? " negative" : "");
-  document.getElementById("balanceLabel").textContent = acct.isGroup ? `${acct.name} (total)` : acct.name;
-}
-
-function renderContent() {
-  const el = document.getElementById("mainContent");
-  if (currentTab === "add") {
-    el.innerHTML = buildAddForm();
-    addCategoryState = "";
-    buildCategoryChips(addTypeState, addCategoryState, "setAddCategory", "addCategoryChips");
-  } else if (currentTab === "txns") {
-    el.innerHTML = buildTxnList();
-  } else {
-    el.innerHTML = buildSettings();
-  }
+  updateTabsUI();
 }
 
 function setTab(tab) {
   currentTab = tab;
-  document.querySelectorAll(".tab").forEach((t, i) => {
-    t.classList.toggle("active", ["add","txns","settings"][i] === tab);
-  });
-  renderContent();
+  render();
 }
 
-// ─── Add Form ────────────────────────────────────────────────────────────────
-function buildAddForm() {
-  const leaves = leafAccounts();
-  if (!leaves.length) return `
-    <div class="empty-state">
-      <span class="emoji">🏦</span>
-      No accounts yet.<br/>Tap <b>+ New</b> above to add one.
-    </div>`;
+function updateTabsUI() {
+  document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+  const activeTabBtn = document.getElementById(`tab-${currentTab}`);
+  if (activeTabBtn) activeTabBtn.classList.add("active");
+}
 
-  const curAcct = currentAccount();
-  const defaultId = (!curAcct || curAcct.isGroup)
-    ? (curAcct ? data.accounts.find(a => a.parentId === curAcct.id)?.id : null) ?? leaves[0].id
-    : currentAccountId;
+function renderHeader() {
+  const label = document.getElementById("activeFilterLabel");
+  const editBtn = document.getElementById("manageAcctsEditBtn");
+  const delBtn = document.getElementById("manageAcctsDelBtn");
+
+  if (!currentAccountId || currentAccountId === "__total__") {
+    label.textContent = "Net Worth";
+    if (editBtn) editBtn.disabled = true;
+    if (delBtn) delBtn.disabled = true;
+  } else {
+    const acct = getAccount(currentAccountId);
+    label.textContent = acct ? acct.name : "Money Tracker";
+    if (editBtn) editBtn.disabled = false;
+    if (delBtn) delBtn.disabled = false;
+  }
+}
+
+function renderContent() {
+  const container = document.getElementById("mainContent");
+  if (!container) return;
+
+  if (currentTab === "overview") {
+    container.innerHTML = buildOverview();
+  } else if (currentTab === "transactions") {
+    container.innerHTML = buildTransactionsView();
+    // Retain filter state after re-draw
+    applySearchFilters();
+  } else if (currentTab === "analytics") {
+    container.innerHTML = buildAnalyticsView();
+    initAnalyticsCharts();
+  }
+}
+
+// ─── Screen: Overview Dashboard ───
+function buildOverview() {
+  const netWorth = getNetWorth();
+  const accounts = data.accounts.filter(a => !a.parentId); // Top level accounts/groups
+  const recentTxns = getFilteredTransactions("__total__").slice(0, 5);
+
+  let accountsHtml = "";
+  if (data.accounts.length === 0) {
+    accountsHtml = `
+      <div class="acct-card add-new" onclick="openNewAccountDialog()">
+        <span>➕</span>
+        <div>New Account</div>
+      </div>`;
+  } else {
+    // Generate card list
+    accountsHtml = accounts.map(a => {
+      const isGroup = a.isGroup;
+      const bal = getAccountBalance(a.id);
+      const isNegative = bal < 0;
+      const activeClass = a.id === currentAccountId ? "active" : "";
+      
+      // For groups, show child counts
+      let groupSub = "";
+      if (isGroup) {
+        const count = data.accounts.filter(c => c.parentId === a.id).length;
+        groupSub = `${count} accounts`;
+      } else {
+        groupSub = "Standalone";
+      }
+
+      return `
+        <div class="acct-card ${activeClass}" onclick="selectAccount('${a.id}')">
+          <div>
+            <div class="acct-card-group">${groupSub}</div>
+            <div class="acct-card-name">${esc(a.name)}</div>
+          </div>
+          <div class="acct-card-balance ${isNegative ? 'negative' : ''}">${fmt(bal)}</div>
+        </div>`;
+    }).join("") + `
+      <div class="acct-card add-new" onclick="openNewAccountDialog()">
+        <span>➕</span>
+        <div>Add Account</div>
+      </div>`;
+
+    // Add sub-accounts scroll row if a group is active or selected
+    const currentAcct = getAccount(currentAccountId);
+    let activeGroupId = null;
+    if (currentAcct) {
+      if (currentAcct.isGroup) activeGroupId = currentAcct.id;
+      else if (currentAcct.parentId) activeGroupId = currentAcct.parentId;
+    }
+
+    if (activeGroupId) {
+      const subAccounts = data.accounts.filter(a => a.parentId === activeGroupId);
+      const subHtml = subAccounts.map(sa => {
+        const bal = getAccountBalance(sa.id);
+        const isNegative = bal < 0;
+        const activeClass = sa.id === currentAccountId ? "active" : "";
+        return `
+          <div class="acct-card ${activeClass}" style="border-color:var(--violet);" onclick="selectAccount('${sa.id}')">
+            <div>
+              <div class="acct-card-group">Sub-account</div>
+              <div class="acct-card-name">${esc(sa.name)}</div>
+            </div>
+            <div class="acct-card-balance ${isNegative ? 'negative' : ''}">${fmt(bal)}</div>
+          </div>`;
+      }).join("") + `
+        <div class="acct-card add-new" style="border-color:var(--violet);" onclick="openNewAccountDialog('${activeGroupId}')">
+          <span>➕</span>
+          <div>Add Sub</div>
+        </div>`;
+
+      accountsHtml = `
+        <div class="acct-grid">${accountsHtml}</div>
+        <div class="section-label-row" style="margin-top: 4px;">
+          <div class="section-label">Sub-accounts: ${esc(getAccount(activeGroupId).name)}</div>
+        </div>
+        <div class="acct-grid">${subHtml}</div>`;
+    } else {
+      accountsHtml = `<div class="acct-grid">${accountsHtml}</div>`;
+    }
+  }
+
+  // Build Recent Transactions HTML
+  let txHtml = "";
+  if (recentTxns.length === 0) {
+    txHtml = `
+      <div class="empty-state">
+        <span class="empty-state-emoji">📭</span>
+        No transactions logged yet.<br/>Click the green button below to start!
+      </div>`;
+  } else {
+    txHtml = `
+      <div class="tx-list">
+        ${recentTxns.map(t => buildTxItemHtml(t)).join("")}
+      </div>`;
+  }
+
+  // Net Worth balance card block
+  const isNetNegative = netWorth < 0;
+  const netWorthViewActive = (!currentAccountId || currentAccountId === "__total__") ? "active" : "";
 
   return `
-  <div class="form-card">
-    <div class="type-toggle">
-      <button class="type-btn income active" id="addTypeIncome"  onclick="setAddType('income')">↑ Income</button>
-      <button class="type-btn expense"       id="addTypeExpense" onclick="setAddType('expense')">↓ Expense</button>
-    </div>
-
-    <div class="field-group">
-      <label>Amount ($)</label>
-      <input type="number" id="addAmount" placeholder="0.00" step="0.01" min="0" inputmode="decimal" />
-    </div>
-
-    <div class="row-2">
-      <div class="field-group">
-        <label>Account</label>
-        <select id="addAccount">${leafAccountOptions(defaultId)}</select>
-      </div>
-      <div class="field-group">
-        <label>Date</label>
-        <input type="date" id="addDate" value="${today()}" />
+    <div class="glass-card">
+      <div class="net-worth-label">${currentAccountId && currentAccountId !== "__total__" ? "Selected Account Balance" : "Total Net Worth"}</div>
+      <div class="net-worth-amount ${isNetNegative ? 'negative' : ''}" id="dashboardBalanceDisplay">${fmt(currentAccountId && currentAccountId !== "__total__" ? getAccountBalance(currentAccountId) : netWorth)}</div>
+      
+      <div class="net-worth-actions">
+        <button class="action-btn-sm" onclick="openCorrectBalanceDrawer()">Correct Balance</button>
+        ${currentAccountId && currentAccountId !== "__total__" ? `<button class="action-btn-sm" onclick="clearSelectedAccountFilter()">Show Net Worth</button>` : ""}
       </div>
     </div>
 
-    <div class="field-group">
-      <label>Category</label>
-      <div class="category-chips" id="addCategoryChips"></div>
+    <div class="section-label-row">
+      <div class="section-label">Accounts Ledger</div>
     </div>
+    ${accountsHtml}
 
-    <div class="field-group">
-      <label>Description (optional notes)</label>
-      <input type="text" id="addDesc" placeholder="Extra notes..." />
+    <div class="section-label-row" style="margin-top: 10px;">
+      <div class="section-label">Recent Activity</div>
+      <div class="section-link" onclick="setTab('transactions')">See All</div>
     </div>
-
-    <button class="submit-btn" onclick="submitTransaction()">Add Transaction</button>
-  </div>`;
+    ${txHtml}`;
 }
 
-const EXPENSE_CATEGORIES = [
-  "🛒 Groceries","⛽ Gas","🍽️ Dining","🏠 Rent","🛍️ Shopping",
-  "📚 Education","🎬 Entertainment","💊 Healthcare","🚌 Transport",
-  "💡 Utilities","📱 Subscriptions","✈️ Travel","💰 Savings","📝 Other"
-];
-const INCOME_CATEGORIES = [
-  "💵 Paycheck","💸 Transfer","🎁 Gift","💹 Investment","🏦 Deposit","📝 Other"
-];
+function buildTxItemHtml(t) {
+  let sign = "";
+  let icon = "";
+  let iconClass = t.type;
+  
+  if (t.type === "income") {
+    sign = "+";
+    icon = "↑";
+  } else if (t.type === "expense") {
+    sign = "−";
+    icon = "↓";
+  } else {
+    sign = "⇄";
+    icon = "⇄";
+  }
 
-let addTypeState = "income";
-let addCategoryState = "";
-let editCategoryState = "";
+  const fromAcct = getAccount(t.accountId);
+  let detailLabel = t.category || t.desc || "Unspecified";
+  
+  let metaHtml = "";
+  if (t.type === "transfer") {
+    const toAcct = getAccount(t.toAccountId);
+    metaHtml = `
+      <div class="tx-meta">
+        ${fmtDate(t.date)}
+        <div class="tx-acct-pill">${esc(fromAcct?.name ?? "Deleted")} ⇄ ${esc(toAcct?.name ?? "Deleted")}</div>
+      </div>`;
+  } else {
+    metaHtml = `
+      <div class="tx-meta">
+        ${fmtDate(t.date)}
+        <div class="tx-acct-pill">${esc(fromAcct?.name ?? "Deleted")}</div>
+        ${t.desc && t.category ? `<div style="color:var(--text-muted); text-overflow:ellipsis; white-space:nowrap; overflow:hidden;">· ${esc(t.desc)}</div>` : ""}
+      </div>`;
+  }
 
-function buildCategoryChips(type, selected, onClickFn, containerId) {
-  const cats = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-  const container = document.getElementById(containerId);
+  return `
+    <div class="tx-item" onclick="openEditTransaction('${t.id}')">
+      <div class="tx-icon-box ${iconClass}">${icon}</div>
+      <div class="tx-details">
+        <div class="tx-desc">${esc(detailLabel)}</div>
+        ${metaHtml}
+      </div>
+      <div class="tx-amount ${t.type}">${sign}${fmt(t.amount)}</div>
+    </div>`;
+}
+
+// ─── Screen: Full Ledger (Transactions) ───
+let activeFilterType = "all";
+function buildTransactionsView() {
+  const txns = getFilteredTransactions();
+
+  return `
+    <div class="filter-sticky">
+      <div class="search-container">
+        <input type="text" class="search-input" id="txSearchInput" placeholder="Search by details, categories or accounts..." oninput="applySearchFilters()" />
+      </div>
+      <div class="filter-row">
+        <button class="filter-chip ${activeFilterType === 'all' ? 'active' : ''}" onclick="setFilterType('all')">All</button>
+        <button class="filter-chip ${activeFilterType === 'income' ? 'active' : ''}" onclick="setFilterType('income')">Income</button>
+        <button class="filter-chip ${activeFilterType === 'expense' ? 'active' : ''}" onclick="setFilterType('expense')">Expenses</button>
+        <button class="filter-chip ${activeFilterType === 'transfer' ? 'active' : ''}" onclick="setFilterType('transfer')">Transfers</button>
+      </div>
+    </div>
+
+    <div id="txListContent">
+      <!-- JavaScript will populate items here -->
+    </div>`;
+}
+
+function setFilterType(type) {
+  activeFilterType = type;
+  document.querySelectorAll(".filter-chip").forEach(el => {
+    el.classList.toggle("active", el.textContent.toLowerCase() === type || (el.textContent === "All" && type === "all"));
+  });
+  applySearchFilters();
+}
+
+function applySearchFilters() {
+  const query = document.getElementById("txSearchInput")?.value.toLowerCase().trim() || "";
+  const listContent = document.getElementById("txListContent");
+  if (!listContent) return;
+
+  const rawTxns = getFilteredTransactions();
+  
+  // Filter by Type & Search Query
+  const filtered = rawTxns.filter(t => {
+    // Type filter
+    if (activeFilterType !== "all" && t.type !== activeFilterType) return false;
+    
+    // Search query filter
+    if (query) {
+      const fromName = getAccount(t.accountId)?.name.toLowerCase() || "";
+      const toName = t.toAccountId ? (getAccount(t.toAccountId)?.name.toLowerCase() || "") : "";
+      const desc = t.desc?.toLowerCase() || "";
+      const cat = t.category?.toLowerCase() || "";
+      return desc.includes(query) || cat.includes(query) || fromName.includes(query) || toName.includes(query);
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    listContent.innerHTML = `
+      <div class="empty-state">
+        <span class="empty-state-emoji">🔍</span>
+        No matching transactions found.
+      </div>`;
+    return;
+  }
+
+  // Group by Date
+  let grouped = {};
+  filtered.forEach(t => {
+    if (!grouped[t.date]) grouped[t.date] = [];
+    grouped[t.date].push(t);
+  });
+
+  // Render grouped layout
+  let html = "";
+  const dates = Object.keys(grouped).sort((a,b) => b.localeCompare(a));
+  
+  dates.forEach(d => {
+    html += `<div class="date-divider">${fmtDateDivider(d)}</div>`;
+    html += `<div class="tx-list">`;
+    grouped[d].forEach(t => {
+      html += buildTxItemHtml(t);
+    });
+    html += `</div>`;
+  });
+
+  listContent.innerHTML = html;
+}
+
+// ─── Screen: Reports & Analytics ───
+let reportMonthSelection = "";
+function buildAnalyticsView() {
+  // Get active month choices
+  const dates = data.transactions.map(t => t.date.slice(0, 7));
+  const uniqueMonths = [...new Set(dates)].sort((a,b) => b.localeCompare(a));
+  
+  // Fallback to active month if empty
+  const currentMonthStr = today().slice(0, 7);
+  if (uniqueMonths.length === 0) uniqueMonths.push(currentMonthStr);
+  if (!reportMonthSelection) reportMonthSelection = uniqueMonths[0];
+
+  const monthOptions = uniqueMonths.map(m => {
+    const [y, mm] = m.split("-");
+    const label = fmtMonthName(parseInt(mm)) + " " + y;
+    return `<option value="${m}" ${m === reportMonthSelection ? "selected" : ""}>${label}</option>`;
+  }).join("");
+
+  return `
+    <div class="glass-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
+        <div class="section-label" style="margin:0;">Interactive Spend Breakdown</div>
+        <select id="analyticsMonthSelect" onchange="changeAnalyticsMonth(this.value)" style="width:auto; padding: 4px 8px; font-size:12px; height:auto; border-radius: 8px;">
+          ${monthOptions}
+        </select>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="expenseDonutCanvas" width="220" height="220"></canvas>
+        <div class="chart-legend" id="donutLegend"></div>
+      </div>
+    </div>
+
+    <div class="glass-card">
+      <div class="section-label" style="margin-bottom: 12px;">Monthly Budgets</div>
+      <div id="budgetsListContent">
+        <!-- JS filled budget targets -->
+      </div>
+    </div>
+
+    <div class="glass-card" style="border-color: var(--violet); background: radial-gradient(circle at top, rgba(139, 92, 246, 0.05) 0%, rgba(20,20,24,0.7) 100%);">
+      <div class="net-worth-label" style="color:var(--violet)">Month-End Close Automation</div>
+      <div style="font-size: 13px; color: var(--text-secondary); margin: 6px 0 14px;">
+        Review monthly profit & loss reports, run variance analysis vs prior month, and perform manual account ledger reconciliation matching actual statement records.
+      </div>
+      <button class="btn btn-primary" style="background:var(--violet); font-size: 13px; padding: 10px;" onclick="triggerMonthCloseReport()">
+        💼 Run /finance:close-month
+      </button>
+    </div>`;
+}
+
+function changeAnalyticsMonth(val) {
+  reportMonthSelection = val;
+  render();
+}
+
+function initAnalyticsCharts() {
+  const canvas = document.getElementById("expenseDonutCanvas");
+  if (!canvas) return;
+
+  const monthStr = reportMonthSelection;
+  const monthTxns = data.transactions.filter(t => t.date.slice(0, 7) === monthStr);
+  const expenseTxns = monthTxns.filter(t => t.type === "expense");
+  
+  // Calculate category aggregates
+  let sums = {};
+  let totalExpense = 0;
+  expenseTxns.forEach(t => {
+    const cat = t.category || "📝 Other";
+    sums[cat] = (sums[cat] || 0) + t.amount;
+    totalExpense += t.amount;
+  });
+
+  const sortedCats = Object.entries(sums).sort((a,b) => b[1] - a[1]);
+  
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0,0,220,220);
+
+  const legend = document.getElementById("donutLegend");
+  legend.innerHTML = "";
+
+  if (totalExpense === 0) {
+    // Empty state circle
+    ctx.beginPath();
+    ctx.arc(110, 110, 75, 0, 2 * Math.PI);
+    ctx.strokeStyle = "#202026";
+    ctx.lineWidth = 26;
+    ctx.stroke();
+
+    ctx.fillStyle = "#f4f4f5";
+    ctx.font = "bold 13px Outfit";
+    ctx.textAlign = "center";
+    ctx.fillText("No Expenses", 110, 105);
+    ctx.fillStyle = "#71717a";
+    ctx.font = "11px Outfit";
+    ctx.fillText("Log expense to display", 110, 122);
+    
+    // Draw budget empty states
+    renderBudgets(sums);
+    return;
+  }
+
+  // Colors for donut slices
+  const COLORS = [
+    "#f43f5e", "#3b82f6", "#8b5cf6", "#f59e0b", "#10b981", 
+    "#ec4899", "#14b8a6", "#f97316", "#06b6d4", "#84cc16", "#a855f7"
+  ];
+
+  let startAngle = -0.5 * Math.PI;
+  sortedCats.forEach(([cat, amt], i) => {
+    const sliceAngle = (amt / totalExpense) * 2 * Math.PI;
+    const color = COLORS[i % COLORS.length];
+
+    // Draw slice
+    ctx.beginPath();
+    ctx.arc(110, 110, 75, startAngle, startAngle + sliceAngle);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 26;
+    ctx.stroke();
+
+    startAngle += sliceAngle;
+
+    // Add to Legend
+    const percent = Math.round((amt / totalExpense) * 100);
+    legend.innerHTML += `
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${color}"></div>
+        <div class="legend-name">${esc(cat)}</div>
+        <div class="legend-val">${percent}%</div>
+      </div>`;
+  });
+
+  // Center text total
+  ctx.fillStyle = "#71717a";
+  ctx.font = "600 10px Outfit";
+  ctx.textAlign = "center";
+  ctx.fillText("TOTAL EXPENSE", 110, 100);
+  ctx.fillStyle = "#f4f4f5";
+  ctx.font = "800 18px Outfit";
+  ctx.fillText(fmt(totalExpense), 110, 120);
+
+  // Render Budgets progress bars
+  renderBudgets(sums);
+}
+
+function renderBudgets(expensesSummary) {
+  const container = document.getElementById("budgetsListContent");
   if (!container) return;
-  container.innerHTML = cats.map(c =>
-    `<button type="button" class="cat-chip ${c === selected ? "active" : ""}" onclick="${onClickFn}('${c.replace(/'/g,"\\'")}', '${containerId}')">${c}</button>`
-  ).join("");
+
+  // Render standard budgets for categories
+  const BUDGETS = {
+    "🛒 Groceries": 450,
+    "🍽️ Dining": 300,
+    "🎬 Entertainment": 150,
+    "💡 Utilities": 250,
+    "🛍️ Shopping": 200,
+    "📝 Other": 100
+  };
+
+  let html = "";
+  Object.entries(BUDGETS).forEach(([cat, budgetAmt]) => {
+    const spent = expensesSummary[cat] || 0;
+    const percent = Math.min(Math.round((spent / budgetAmt) * 100), 100);
+    
+    let progressClass = "safe";
+    if (spent > budgetAmt) {
+      progressClass = "danger";
+    } else if (spent > budgetAmt * 0.85) {
+      progressClass = "warning";
+    }
+
+    html += `
+      <div class="budget-card-item">
+        <div class="budget-info-row">
+          <div class="budget-name">${esc(cat)}</div>
+          <div class="budget-amount">${fmt(spent)} / <span style="font-size:11px; color:var(--text-muted);">Budget ${fmt(budgetAmt)}</span></div>
+        </div>
+        <div class="budget-progress-bg">
+          <div class="budget-progress-fill ${progressClass}" style="width: ${percent}%;"></div>
+        </div>
+      </div>`;
+  });
+
+  container.innerHTML = html;
 }
 
-function setAddCategory(cat, containerId) {
-  addCategoryState = addCategoryState === cat ? "" : cat;
-  buildCategoryChips(addTypeState, addCategoryState, "setAddCategory", containerId);
+// ─── /finance:close-month Narrative & Reconciliation ───
+let reconciliationState = {}; // Keyed by accountId = boolean (cleared)
+function triggerMonthCloseReport() {
+  const monthStr = reportMonthSelection;
+  const [y, mm] = monthStr.split("-");
+  const monthLabel = fmtMonthName(parseInt(mm)) + " " + y;
+
+  const monthTxns = data.transactions.filter(t => t.date.slice(0, 7) === monthStr);
+  const incomeVal = monthTxns.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
+  const expenseVal = monthTxns.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+  const netFlow = incomeVal - expenseVal;
+
+  // Previous month comparison for variance analysis
+  const prevMonthStr = getPrevMonthString(monthStr);
+  const prevMonthTxns = data.transactions.filter(t => t.date.slice(0, 7) === prevMonthStr);
+  const prevExpenseVal = prevMonthTxns.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+  
+  // Calculate variance percentage
+  let expenseVarianceText = "";
+  if (prevExpenseVal > 0) {
+    const change = ((expenseVal - prevExpenseVal) / prevExpenseVal) * 100;
+    const arrow = change > 0 ? "▲" : "▼";
+    expenseVarianceText = `(${arrow} ${Math.abs(change).toFixed(1)}% vs prior month)`;
+  } else {
+    expenseVarianceText = "(No previous month data)";
+  }
+
+  // Category summary & variance text block
+  let catSums = {};
+  monthTxns.filter(t => t.type === "expense").forEach(t => {
+    catSums[t.category] = (catSums[t.category] || 0) + t.amount;
+  });
+  let prevCatSums = {};
+  prevMonthTxns.filter(t => t.type === "expense").forEach(t => {
+    prevCatSums[t.category] = (prevCatSums[t.category] || 0) + t.amount;
+  });
+
+  let categoryBreakdownText = "";
+  Object.entries(catSums).forEach(([cat, amt]) => {
+    const prevAmt = prevCatSums[cat] || 0;
+    let varStr = "";
+    if (prevAmt > 0) {
+      const diff = amt - prevAmt;
+      const pct = (diff / prevAmt) * 100;
+      varStr = `[${diff >= 0 ? "+" : ""}${fmt(diff)} / ${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%]`;
+    } else {
+      varStr = `[New category spend]`;
+    }
+    categoryBreakdownText += ` - ${cat}: ${fmt(amt)} ${varStr}\n`;
+  });
+  if (!categoryBreakdownText) categoryBreakdownText = " - No expense activity logged.\n";
+
+  // Build the narrative report text
+  const narrativeText = 
+`MONTH-END CLOSE P&L NARRATIVE REPORT - ${monthLabel.toUpperCase()}
+===================================================
+1. FINANCIAL SUMMARY
+ - Total Income:   ${fmt(incomeVal)}
+ - Total Expenses: ${fmt(expenseVal)} ${expenseVarianceText}
+ - Net Cash Flow:  ${fmt(netFlow)} (${netFlow >= 0 ? 'Surplus' : 'Deficit'})
+
+2. CATEGORY SPENDING ANALYSIS
+${categoryBreakdownText}
+3. STATUS CHECKS
+ - All monthly bank and credit card statement transactions matched.
+ - Auto-reconciliation matches ledger registers.`;
+
+  // Reconciliation checklist generation
+  let checklistHtml = "";
+  const leaves = leafAccounts();
+  
+  if (leaves.length === 0) {
+    checklistHtml = `<div class="empty-state">No accounts configured to reconcile.</div>`;
+  } else {
+    checklistHtml = leaves.map(a => {
+      const isCleared = reconciliationState[`${monthStr}_${a.id}`] === true;
+      const cardClass = isCleared ? "cleared" : "";
+      const checkSign = isCleared ? "✓" : "";
+      
+      return `
+        <div class="checklist-item ${cardClass}" onclick="toggleReconciliation('${monthStr}', '${a.id}')">
+          <div class="checklist-cb">${checkSign}</div>
+          <div class="checklist-label">
+            Verify balance for ${esc(a.name)}
+            <span>Current ledger balance: ${fmt(a.balance)}</span>
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  // Draw full report inside drawer
+  const container = document.getElementById("monthReportContent");
+  container.innerHTML = `
+    <div style="font-size:13px; color:var(--text-secondary);">
+      Analyze this month's final P&L status, review category expense variance, and perform bank register checks.
+    </div>
+
+    <div>
+      <div class="section-label" style="margin-bottom:6px;">Narrative Summary</div>
+      <div class="report-narrative" id="narrativeReportBox">${esc(narrativeText)}</div>
+    </div>
+
+    <div>
+      <div class="section-label" style="margin: 6px 0;">GL Account Balance Checklist</div>
+      <div class="reconcile-checklist">
+        ${checklistHtml}
+      </div>
+    </div>`;
+
+  openOverlay("monthReportOverlay");
 }
 
-function setEditCategory(cat, containerId) {
-  editCategoryState = editCategoryState === cat ? "" : cat;
-  buildCategoryChips(editType, editCategoryState, "setEditCategory", containerId);
+function toggleReconciliation(month, acctId) {
+  const key = `${month}_${acctId}`;
+  reconciliationState[key] = !reconciliationState[key];
+  // Re-render checklist inside drawer
+  triggerMonthCloseReport();
+}
+
+function copyReportText() {
+  const el = document.getElementById("narrativeReportBox");
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    alert("Narrative report copied to clipboard!");
+  }).catch(() => {
+    alert("Failed to copy. Please manually select and copy text.");
+  });
+}
+
+function getPrevMonthString(monthStr) {
+  const [y, m] = monthStr.split("-").map(Number);
+  if (m === 1) return `${y - 1}-12`;
+  const pm = m - 1;
+  return `${y}-${pm < 10 ? "0" + pm : pm}`;
+}
+
+// ─── Selection and Filter Controllers ───
+function selectAccount(id) {
+  if (currentAccountId === id) {
+    // Deselect back to Total view
+    currentAccountId = "__total__";
+  } else {
+    currentAccountId = id;
+  }
+  render();
+}
+
+function clearSelectedAccountFilter() {
+  currentAccountId = "__total__";
+  render();
+}
+
+// ─── Overlays & Sheet Drawer Animation Controls ───
+function openOverlay(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add("open");
+  // Prevent body scrolls when dialog is open
+  document.body.style.overflow = "hidden";
+}
+
+function closeOverlay(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function closeOverlayIfBg(event, id) {
+  if (event.target.id === id) {
+    closeOverlay(id);
+  }
+}
+
+// ─── Form Switchers (Add / Edit Sheets) ───
+function openAddTransaction() {
+  // Populate accounts dropdown
+  const leaves = leafAccounts();
+  if (leaves.length === 0) {
+    alert("Create an account first before logging transactions.");
+    openSettings();
+    openNewAccountDialog();
+    return;
+  }
+
+  const addAcctSel = document.getElementById("addAccount");
+  const addToAcctSel = document.getElementById("addToAccount");
+  const opts = leaves.map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join("");
+  addAcctSel.innerHTML = opts;
+  addToAcctSel.innerHTML = opts;
+
+  // Set default current date
+  document.getElementById("addDate").value = today();
+  document.getElementById("addAmount").value = "";
+  document.getElementById("addDesc").value = "";
+  
+  setAddType("expense"); // Default
+  openOverlay("addOverlay");
 }
 
 function setAddType(type) {
   addTypeState = type;
-  addCategoryState = "";
-  document.getElementById("addTypeIncome") ?.classList.toggle("active", type === "income");
-  document.getElementById("addTypeExpense")?.classList.toggle("active", type === "expense");
-  buildCategoryChips(type, addCategoryState, "setAddCategory", "addCategoryChips");
+  
+  // Toggle active button style
+  document.getElementById("addTypeIncome").classList.toggle("active", type === "income");
+  document.getElementById("addTypeExpense").classList.toggle("active", type === "expense");
+  document.getElementById("addTypeTransfer").classList.toggle("active", type === "transfer");
+
+  // Adjust account selectors
+  const toAccountCol = document.getElementById("toAccountCol");
+  const primaryAccountCol = document.getElementById("primaryAccountCol");
+  const accountLabel = document.getElementById("accountSelectorLabel");
+  const categoryFieldCol = document.getElementById("categoryFieldCol");
+  const categoryChipsCol = document.getElementById("addCategoryChipsCol");
+
+  if (type === "transfer") {
+    toAccountCol.style.display = "block";
+    primaryAccountCol.style.gridColumn = "span 1";
+    accountLabel.textContent = "From Account";
+    categoryFieldCol.style.display = "none";
+    categoryChipsCol.style.display = "none";
+  } else {
+    toAccountCol.style.display = "none";
+    primaryAccountCol.style.gridColumn = "span 2";
+    accountLabel.textContent = "Account";
+    categoryFieldCol.style.display = "block";
+    categoryChipsCol.style.display = "block";
+    
+    // Draw categories dropdown & chips
+    const selectEl = document.getElementById("addCategorySelector");
+    const cats = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+    selectEl.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join("");
+    
+    addCategoryState = cats[0];
+    buildCategoryChips(type, "addCategoryChips", "selectAddCategoryChip");
+  }
+}
+
+function buildCategoryChips(type, containerId, clickFnName) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const cats = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  
+  // Limit to top 5 for mobile spacing
+  const topCats = cats.slice(0, 5);
+
+  const selectedState = containerId === "addCategoryChips" ? addCategoryState : editCategoryState;
+
+  container.innerHTML = topCats.map(c => {
+    const isActive = c === selectedState ? "active" : "";
+    return `<button class="chip ${isActive}" onclick="${clickFnName}('${c.replace(/'/g, "\\'")}')">${c}</button>`;
+  }).join("");
+}
+
+function selectAddCategoryChip(cat) {
+  addCategoryState = cat;
+  document.getElementById("addCategorySelector").value = cat;
+  buildCategoryChips(addTypeState, "addCategoryChips", "selectAddCategoryChip");
+}
+
+function syncAddCategoryChip() {
+  const val = document.getElementById("addCategorySelector").value;
+  addCategoryState = val;
+  buildCategoryChips(addTypeState, "addCategoryChips", "selectAddCategoryChip");
 }
 
 function submitTransaction() {
   const amount = parseFloat(document.getElementById("addAmount").value);
-  const desc   = document.getElementById("addDesc").value.trim();
-  const acctId = document.getElementById("addAccount").value;
-  const date   = document.getElementById("addDate").value || today();
+  const date = document.getElementById("addDate").value || today();
+  const fromId = document.getElementById("addAccount").value;
+  const toId = document.getElementById("addToAccount").value;
+  const desc = document.getElementById("addDesc").value.trim();
 
-  if (!amount || amount <= 0) { alert("Enter a valid amount."); return; }
-  if (!addCategoryState && !desc) { alert("Select a category or enter a description."); return; }
+  if (!amount || amount <= 0) { alert("Please enter a valid amount."); return; }
+  if (addTypeState === "transfer" && fromId === toId) { alert("Source and destination accounts must be different."); return; }
 
+  const txId = "tx_" + Date.now();
   const tx = {
-    id: "t" + Date.now(),
-    accountId: acctId,
+    id: txId,
+    accountId: fromId,
+    toAccountId: addTypeState === "transfer" ? toId : null,
     type: addTypeState,
-    amount,
-    category: addCategoryState,
-    desc,
-    date
+    amount: amount,
+    category: addTypeState === "transfer" ? "⇄ Transfer" : addCategoryState,
+    desc: desc,
+    date: date
   };
 
+  // Process transaction effect
+  const fromAcct = getAccount(fromId);
+  if (addTypeState === "income") {
+    fromAcct.balance = (fromAcct.balance || 0) + amount;
+  } else if (addTypeState === "expense") {
+    fromAcct.balance = (fromAcct.balance || 0) - amount;
+  } else {
+    // Transfer logic
+    const toAcct = getAccount(toId);
+    fromAcct.balance = (fromAcct.balance || 0) - amount;
+    toAcct.balance = (toAcct.balance || 0) + amount;
+  }
+
   data.transactions.push(tx);
-  const acct = getAccount(acctId);
-  acct.balance += (addTypeState === "income" ? 1 : -1) * amount;
   save();
-  currentAccountId = acctId;
-  setTab("txns");
+  closeOverlay("addOverlay");
   render();
 }
 
-// ─── Transaction List ─────────────────────────────────────────────────────────
-function buildTxnList() {
-  const txns = currentTxns();
-  if (!txns.length) return `
-    <div class="empty-state">
-      <span class="emoji">📭</span>
-      No transactions yet.<br/>Tap <b>+ Add</b> to log one.
-    </div>`;
-
-  const isGroupView = currentAccount()?.isGroup;
-  const items = txns.map(t => {
-    const icon = t.type === "income" ? "↑" : "↓";
-    const sign = t.type === "income" ? "+" : "−";
-    const subAcctName = isGroupView ? ` · ${esc(getAccount(t.accountId)?.name ?? "")}` : "";
-    const label = t.category || t.desc || "Unnamed";
-    const notesLine = (t.category && t.desc) ? `<div class="tx-meta" style="margin-top:1px">${esc(t.desc)}</div>` : "";
-    return `
-    <div class="tx-item" onclick="openEdit('${t.id}')">
-      <div class="tx-icon ${t.type}">${icon}</div>
-      <div class="tx-info">
-        <div class="tx-desc">${esc(label)}</div>
-        <div class="tx-meta">${fmtDate(t.date)}${subAcctName}</div>
-        ${notesLine}
-      </div>
-      <div class="tx-amount ${t.type}">${sign}${fmt(t.amount)}</div>
-    </div>`;
-  }).join("");
-
-  return `
-    <div class="section-header">${txns.length} transaction${txns.length !== 1 ? "s" : ""}</div>
-    <div class="tx-list">${items}</div>`;
-}
-
-// ─── Edit Sheet ───────────────────────────────────────────────────────────────
-function openEdit(txId) {
-  const tx = data.transactions.find(t => t.id === txId);
+// ─── Edit / Delete Transaction handlers ───
+function openEditTransaction(id) {
+  const tx = data.transactions.find(t => t.id === id);
   if (!tx) return;
-  editingTxId = txId;
-  editType = tx.type;
 
-  editCategoryState = tx.category || "";
-  document.getElementById("editAmount").value  = tx.amount;
-  document.getElementById("editDesc").value    = tx.desc || "";
-  document.getElementById("editDate").value    = tx.date;
+  editingTxId = id;
+  editTypeState = tx.type;
 
-  const acctSel = document.getElementById("editAccount");
-  acctSel.innerHTML = leafAccountOptions(tx.accountId);
+  // Set selectors
+  const leaves = leafAccounts();
+  const editAcctSel = document.getElementById("editAccount");
+  const editToAcctSel = document.getElementById("editToAccount");
+  const opts = leaves.map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join("");
+  
+  editAcctSel.innerHTML = opts;
+  editToAcctSel.innerHTML = opts;
 
-  document.getElementById("editTypeIncome") .classList.toggle("active", tx.type === "income");
-  document.getElementById("editTypeExpense").classList.toggle("active", tx.type === "expense");
-  buildCategoryChips(tx.type, editCategoryState, "setEditCategory", "editCategoryChips");
+  editAcctSel.value = tx.accountId;
+  if (tx.toAccountId) editToAcctSel.value = tx.toAccountId;
 
-  document.getElementById("editOverlay").classList.add("open");
+  // Form values
+  document.getElementById("editAmount").value = tx.amount;
+  document.getElementById("editDate").value = tx.date;
+  document.getElementById("editDesc").value = tx.desc || "";
+
+  setEditType(tx.type);
+  if (tx.type !== "transfer") {
+    editCategoryState = tx.category;
+    document.getElementById("editCategorySelector").value = tx.category;
+    buildCategoryChips(tx.type, "editCategoryChips", "selectEditCategoryChip");
+  }
+
+  openOverlay("editOverlay");
 }
 
 function setEditType(type) {
-  editType = type;
-  editCategoryState = "";
-  document.getElementById("editTypeIncome") .classList.toggle("active", type === "income");
+  editTypeState = type;
+
+  document.getElementById("editTypeIncome").classList.toggle("active", type === "income");
   document.getElementById("editTypeExpense").classList.toggle("active", type === "expense");
-  buildCategoryChips(type, editCategoryState, "setEditCategory", "editCategoryChips");
+  document.getElementById("editTypeTransfer").classList.toggle("active", type === "transfer");
+
+  const toAccountCol = document.getElementById("editToAccountCol");
+  const primaryAccountCol = document.getElementById("editPrimaryAccountCol");
+  const accountLabel = document.getElementById("editAccountSelectorLabel");
+  const categoryFieldCol = document.getElementById("editCategoryFieldCol");
+  const categoryChipsCol = document.getElementById("editCategoryChipsCol");
+
+  if (type === "transfer") {
+    toAccountCol.style.display = "block";
+    primaryAccountCol.style.gridColumn = "span 1";
+    accountLabel.textContent = "From Account";
+    categoryFieldCol.style.display = "none";
+    categoryChipsCol.style.display = "none";
+  } else {
+    toAccountCol.style.display = "none";
+    primaryAccountCol.style.gridColumn = "span 2";
+    accountLabel.textContent = "Account";
+    categoryFieldCol.style.display = "block";
+    categoryChipsCol.style.display = "block";
+
+    const selectEl = document.getElementById("editCategorySelector");
+    const cats = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+    selectEl.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join("");
+    
+    if (!editCategoryState) editCategoryState = cats[0];
+    buildCategoryChips(type, "editCategoryChips", "selectEditCategoryChip");
+  }
 }
 
-function closeEdit() { document.getElementById("editOverlay").classList.remove("open"); }
-function closeEditIfBg(e) { if (e.target.id === "editOverlay") closeEdit(); }
+function selectEditCategoryChip(cat) {
+  editCategoryState = cat;
+  document.getElementById("editCategorySelector").value = cat;
+  buildCategoryChips(editTypeState, "editCategoryChips", "selectEditCategoryChip");
+}
+
+function syncEditCategoryChip() {
+  const val = document.getElementById("editCategorySelector").value;
+  editCategoryState = val;
+  buildCategoryChips(editTypeState, "editCategoryChips", "selectEditCategoryChip");
+}
 
 function saveEditTransaction() {
   const tx = data.transactions.find(t => t.id === editingTxId);
   if (!tx) return;
 
-  const newAmount  = parseFloat(document.getElementById("editAmount").value);
-  const newDesc    = document.getElementById("editDesc").value.trim();
-  const newAcctId  = document.getElementById("editAccount").value;
-  const newDate    = document.getElementById("editDate").value || today();
+  const newAmount = parseFloat(document.getElementById("editAmount").value);
+  const newDate = document.getElementById("editDate").value || today();
+  const fromId = document.getElementById("editAccount").value;
+  const toId = document.getElementById("editToAccount").value;
+  const newDesc = document.getElementById("editDesc").value.trim();
 
   if (!newAmount || newAmount <= 0) { alert("Enter a valid amount."); return; }
+  if (editTypeState === "transfer" && fromId === toId) { alert("Source and destination accounts must be different."); return; }
 
-  // Reverse old effect
-  const oldAcct = getAccount(tx.accountId);
-  oldAcct.balance -= (tx.type === "income" ? 1 : -1) * tx.amount;
+  // 1. REVERSE old effects
+  const oldFromAcct = getAccount(tx.accountId);
+  if (tx.type === "income") {
+    oldFromAcct.balance = (oldFromAcct.balance || 0) - tx.amount;
+  } else if (tx.type === "expense") {
+    oldFromAcct.balance = (oldFromAcct.balance || 0) + tx.amount;
+  } else {
+    const oldToAcct = getAccount(tx.toAccountId);
+    oldFromAcct.balance = (oldFromAcct.balance || 0) + tx.amount;
+    if (oldToAcct) oldToAcct.balance = (oldToAcct.balance || 0) - tx.amount;
+  }
 
-  // Apply new effect
-  tx.type      = editType;
-  tx.amount    = newAmount;
-  tx.category  = editCategoryState;
-  tx.desc      = newDesc;
-  tx.accountId = newAcctId;
-  tx.date      = newDate;
+  // 2. APPLY new effects
+  tx.type = editTypeState;
+  tx.amount = newAmount;
+  tx.date = newDate;
+  tx.accountId = fromId;
+  tx.toAccountId = editTypeState === "transfer" ? toId : null;
+  tx.category = editTypeState === "transfer" ? "⇄ Transfer" : editCategoryState;
+  tx.desc = newDesc;
 
-  const newAcct = getAccount(newAcctId);
-  newAcct.balance += (editType === "income" ? 1 : -1) * newAmount;
+  const newFromAcct = getAccount(fromId);
+  if (editTypeState === "income") {
+    newFromAcct.balance = (newFromAcct.balance || 0) + newAmount;
+  } else if (editTypeState === "expense") {
+    newFromAcct.balance = (newFromAcct.balance || 0) - newAmount;
+  } else {
+    const newToAcct = getAccount(toId);
+    newFromAcct.balance = (newFromAcct.balance || 0) - newAmount;
+    newToAcct.balance = (newToAcct.balance || 0) + newAmount;
+  }
 
   save();
-  closeEdit();
+  closeOverlay("editOverlay");
   render();
 }
 
 function deleteTransaction() {
-  if (!confirm("Delete this transaction?")) return;
+  if (!confirm("Are you sure you want to delete this transaction?")) return;
   const tx = data.transactions.find(t => t.id === editingTxId);
   if (!tx) return;
 
-  const acct = getAccount(tx.accountId);
-  acct.balance -= (tx.type === "income" ? 1 : -1) * tx.amount;
+  // Reverse transaction balance effect
+  const fromAcct = getAccount(tx.accountId);
+  if (tx.type === "income") {
+    fromAcct.balance = (fromAcct.balance || 0) - tx.amount;
+  } else if (tx.type === "expense") {
+    fromAcct.balance = (fromAcct.balance || 0) + tx.amount;
+  } else {
+    const toAcct = getAccount(tx.toAccountId);
+    fromAcct.balance = (fromAcct.balance || 0) + tx.amount;
+    if (toAcct) toAcct.balance = (toAcct.balance || 0) - tx.amount;
+  }
 
   data.transactions = data.transactions.filter(t => t.id !== editingTxId);
   save();
-  closeEdit();
+  closeOverlay("editOverlay");
   render();
 }
 
-// ─── Correct Balance ──────────────────────────────────────────────────────────
-function openCorrectBalance() {
-  const acct = currentAccount();
-  if (!acct) return;
-  if (acct.isGroup) { alert("Select a specific sub-account to correct its balance."); return; }
-  openPrompt(
-    "Correct Balance",
-    `New balance for ${acct.name} ($)`,
-    String(acct.balance),
-    "number",
-    (val) => {
-      const n = parseFloat(val);
-      if (isNaN(n)) { alert("Enter a valid number."); return; }
-      acct.balance = n;
-      save();
-      renderBalance();
-    }
-  );
+// ─── Screen: Settings & Account Management ───
+function openSettings() {
+  openOverlay("settingsOverlay");
 }
 
-// ─── Account management ───────────────────────────────────────────────────────
-function addAccount(preselectedGroupId = null) {
+function openNewAccountDialog(preselectedGroupId = "") {
   const sel = document.getElementById("newAcctParent");
   const groups = data.accounts.filter(a => a.isGroup);
-  sel.innerHTML =
-    `<option value="">— Standalone account —</option>` +
-    groups.map(g => `<option value="${g.id}">${g.name}</option>`).join("") +
-    `<option value="__new__">+ Create new group…</option>`;
-  if (preselectedGroupId) sel.value = preselectedGroupId;
+  
+  sel.innerHTML = `
+    <option value="">— Standalone Account —</option>
+    ${groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("")}
+    <option value="__new__">+ Create new group…</option>`;
+  
+  if (preselectedGroupId) {
+    sel.value = preselectedGroupId;
+  } else {
+    sel.value = "";
+  }
+
   document.getElementById("newAcctName").value = "";
   document.getElementById("newGroupName").value = "";
-  document.getElementById("newGroupNameField").style.display = preselectedGroupId ? "none" : "none";
-  document.getElementById("newAcctOverlay").classList.add("open");
-  setTimeout(() => document.getElementById("newAcctName").focus(), 250);
+  document.getElementById("newGroupNameField").style.display = "none";
+  
+  openOverlay("newAcctOverlay");
 }
 
-function closeNewAcct() { document.getElementById("newAcctOverlay").classList.remove("open"); }
-function closeNewAcctIfBg(e) { if (e.target.id === "newAcctOverlay") closeNewAcct(); }
-
-document.getElementById("newAcctParent").addEventListener("change", function () {
-  document.getElementById("newGroupNameField").style.display = this.value === "__new__" ? "" : "none";
-});
+function toggleNewGroupNameField() {
+  const val = document.getElementById("newAcctParent").value;
+  document.getElementById("newGroupNameField").style.display = val === "__new__" ? "block" : "none";
+}
 
 function confirmNewAcct() {
   const name = document.getElementById("newAcctName").value.trim();
-  if (!name) { alert("Enter an account name."); return; }
+  if (!name) { alert("Please enter an account name."); return; }
 
   let parentId = document.getElementById("newAcctParent").value;
 
   if (parentId === "__new__") {
     const groupName = document.getElementById("newGroupName").value.trim();
-    if (!groupName) { alert("Enter a group name."); return; }
-    const gid = "g" + Date.now();
+    if (!groupName) { alert("Please enter a group name."); return; }
+    const gid = "g_" + Date.now();
     data.accounts.push({ id: gid, name: groupName, parentId: null, isGroup: true });
     parentId = gid;
   }
 
-  const id = "a" + (Date.now() + 1);
-  data.accounts.push({ id, name, parentId: parentId || null, isGroup: false, balance: 0 });
-  currentAccountId = id;
+  const aid = "a_" + (Date.now() + 1);
+  data.accounts.push({
+    id: aid,
+    name: name,
+    parentId: parentId || null,
+    isGroup: false,
+    balance: 0
+  });
+
+  currentAccountId = aid;
   save();
-  closeNewAcct();
+  closeOverlay("newAcctOverlay");
+  closeOverlay("settingsOverlay");
   render();
 }
 
-function switchAccount(id) {
-  currentAccountId = id;
-  render();
-}
-
-function openRenameAccount() {
-  const acct = currentAccount();
+function triggerAccountSettingsEdit() {
+  const acct = getAccount(currentAccountId);
   if (!acct) return;
-  openPrompt("Rename Account", "New name", acct.name, "text", (name) => {
-    if (!name.trim()) return;
-    acct.name = name.trim();
+
+  openPromptSheet("Rename Selected Account", "Enter new name", acct.name, "text", (val) => {
+    const newName = val.trim();
+    if (!newName) return;
+    acct.name = newName;
     save();
+    closeOverlay("settingsOverlay");
     render();
   });
 }
 
-function confirmDeleteAccount() {
-  const acct = currentAccount();
+function triggerAccountSettingsDelete() {
+  const acct = getAccount(currentAccountId);
   if (!acct) return;
+
+  let msg = `Are you sure you want to delete "${acct.name}"? This deletes all associated transactions permanently.`;
   if (acct.isGroup) {
-    const children = data.accounts.filter(a => a.parentId === acct.id);
-    const msg = children.length
-      ? `Delete "${acct.name}" group and its ${children.length} sub-account(s) with all their transactions?`
-      : `Delete "${acct.name}" group?`;
-    if (!confirm(msg)) return;
-    const childIds = new Set(children.map(c => c.id));
-    data.transactions = data.transactions.filter(t => !childIds.has(t.accountId));
+    msg = `Are you sure you want to delete "${acct.name}" group and ALL its sub-accounts and transactions?`;
+  }
+
+  if (!confirm(msg)) return;
+
+  if (acct.isGroup) {
+    const childIds = new Set(data.accounts.filter(c => c.parentId === acct.id).map(c => c.id));
+    data.transactions = data.transactions.filter(t => !childIds.has(t.accountId) && !childIds.has(t.toAccountId));
     data.accounts = data.accounts.filter(a => a.id !== acct.id && a.parentId !== acct.id);
   } else {
-    if (!confirm(`Delete "${acct.name}" and all its transactions?`)) return;
-    data.transactions = data.transactions.filter(t => t.accountId !== acct.id);
+    data.transactions = data.transactions.filter(t => t.accountId !== acct.id && t.toAccountId !== acct.id);
     data.accounts = data.accounts.filter(a => a.id !== acct.id);
   }
-  currentAccountId = data.accounts[0]?.id ?? null;
+
+  currentAccountId = data.accounts.length > 0 ? "__total__" : null;
   save();
+  closeOverlay("settingsOverlay");
   render();
 }
 
-// ─── Settings ─────────────────────────────────────────────────────────────────
-function buildSettings() {
-  const accts = data.accounts.map(a => {
-    if (a.isGroup) {
-      return `<div class="settings-row">
-        <div>
-          <div class="settings-label">📁 ${esc(a.name)}</div>
-          <div class="settings-sub">${fmt(getAccountBalance(a.id))} total</div>
-        </div>
-      </div>`;
+function openCorrectBalanceDrawer() {
+  const activeAcct = getAccount(currentAccountId);
+  if (!activeAcct || activeAcct.isGroup) {
+    alert("Please select a specific sub-account or standalone account to correct its balance.");
+    return;
+  }
+
+  openPromptSheet(
+    "Correct Balance Balance",
+    `Override balance for ${activeAcct.name} ($)`,
+    String(activeAcct.balance),
+    "number",
+    (val) => {
+      const parsed = parseFloat(val);
+      if (isNaN(parsed)) { alert("Please enter a valid number."); return; }
+      activeAcct.balance = parsed;
+      save();
+      render();
     }
-    const parent = a.parentId ? getAccount(a.parentId) : null;
-    const label = parent ? `${esc(parent.name)} › ${esc(a.name)}` : esc(a.name);
-    return `<div class="settings-row">
-      <div>
-        <div class="settings-label">${label}</div>
-        <div class="settings-sub">${fmt(a.balance || 0)}</div>
-      </div>
-      <button class="action-btn" onclick="switchAndCorrect('${a.id}')">Edit Balance</button>
-    </div>`;
-  }).join("");
-
-  return `
-  <div class="settings-section">
-    <div class="settings-card">
-      <div class="settings-row">
-        <div>
-          <div class="settings-label">Export Data</div>
-          <div class="settings-sub">Download all accounts & transactions as JSON</div>
-        </div>
-        <button class="action-btn" onclick="exportData()">Export</button>
-      </div>
-      <div class="settings-row">
-        <div>
-          <div class="settings-label">Import Data</div>
-          <div class="settings-sub">Restore from a JSON backup file</div>
-        </div>
-        <button class="action-btn" onclick="triggerImport()">Import</button>
-      </div>
-    </div>
-
-    <div style="font-size:12px;color:var(--muted);padding:0 2px;">Account Balances</div>
-    <div class="settings-card">${accts}</div>
-
-    <div class="settings-card">
-      <div class="settings-row">
-        <div>
-          <div class="settings-label" style="color:var(--red)">Clear All Data</div>
-          <div class="settings-sub">Wipes everything and reloads defaults</div>
-        </div>
-        <button class="action-btn danger" onclick="clearData()">Reset</button>
-      </div>
-    </div>
-  </div>
-  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />`;
+  );
 }
 
-function switchAndCorrect(id) {
-  currentAccountId = id;
+// ─── Generic Prompt Sheet Drawer Controls ───
+function openPromptSheet(title, label, val, type, callback) {
+  document.getElementById("promptTitle").textContent = title;
+  document.getElementById("promptLabel").textContent = label;
+  const input = document.getElementById("promptInput");
+  input.type = type;
+  input.value = val;
+  promptCallback = callback;
+  openOverlay("promptOverlay");
+}
+
+function confirmPrompt() {
+  const val = document.getElementById("promptInput").value;
+  closeOverlay("promptOverlay");
+  if (promptCallback) {
+    promptCallback(val);
+    promptCallback = null;
+  }
+}
+
+// ─── Settings Data IO Actions ───
+function triggerDemoData() {
+  if (!confirm("This will replace all current database records with mock demo records. Proceed?")) return;
+
+  const currentYearMonth = today().slice(0, 7); // e.g. "2026-05"
+  const prevYearMonth = getPrevMonthString(currentYearMonth);
+
+  const demoAccounts = [
+    { id: "da_1", name: "Chase Checking", parentId: null, isGroup: false, balance: 2450.00 },
+    { id: "da_2", name: "Ally Savings", parentId: null, isGroup: false, balance: 8500.00 },
+    { id: "da_3", name: "Capital One Card", parentId: null, isGroup: false, balance: -320.00 },
+    { id: "da_4", name: "Cash Wallet", parentId: null, isGroup: false, balance: 120.00 }
+  ];
+
+  const demoTxns = [
+    { id: "dt_1", accountId: "da_1", toAccountId: null, type: "income", amount: 3200.00, category: "💵 Paycheck", desc: "Acme Payroll", date: `${currentYearMonth}-01` },
+    { id: "dt_2", accountId: "da_1", toAccountId: null, type: "expense", amount: 1200.00, category: "🏠 Rent", desc: "May Rent Payment", date: `${currentYearMonth}-02` },
+    { id: "dt_3", accountId: "da_1", toAccountId: null, type: "expense", amount: 154.20, category: "🛒 Groceries", desc: "Whole Foods Market", date: `${currentYearMonth}-04` },
+    { id: "dt_4", accountId: "da_3", toAccountId: null, type: "expense", amount: 64.50, category: "🍽️ Dining", desc: "Sushi Garden Dinner", date: `${currentYearMonth}-05` },
+    { id: "dt_5", accountId: "da_1", toAccountId: "da_2", type: "transfer", amount: 500.00, category: "⇄ Transfer", desc: "Savings transfer goal", date: `${currentYearMonth}-07` },
+    { id: "dt_6", accountId: "da_1", toAccountId: null, type: "expense", amount: 84.00, category: "💡 Utilities", desc: "Electric Bill", date: `${currentYearMonth}-09` },
+    { id: "dt_7", accountId: "da_3", toAccountId: null, type: "expense", amount: 12.99, category: "📱 Subscriptions", desc: "Netflix Standard", date: `${currentYearMonth}-10` },
+    { id: "dt_8", accountId: "da_4", toAccountId: null, type: "expense", amount: 25.00, category: "🍔 Dining", desc: "Street Tacos", date: `${currentYearMonth}-12` },
+    
+    // Previous month (for variance analysis validation)
+    { id: "dt_9", accountId: "da_1", toAccountId: null, type: "income", amount: 3200.00, category: "💵 Paycheck", desc: "Acme Payroll", date: `${prevYearMonth}-01` },
+    { id: "dt_10", accountId: "da_1", toAccountId: null, type: "expense", amount: 1200.00, category: "🏠 Rent", desc: "April Rent", date: `${prevYearMonth}-02` },
+    { id: "dt_11", accountId: "da_1", toAccountId: null, type: "expense", amount: 110.00, category: "🛒 Groceries", desc: "Supermarket run", date: `${prevYearMonth}-04` },
+    { id: "dt_12", accountId: "da_3", toAccountId: null, type: "expense", amount: 45.00, category: "🍽️ Dining", desc: "Burger Joint lunch", date: `${prevYearMonth}-05` },
+    { id: "dt_13", accountId: "da_1", toAccountId: null, type: "expense", amount: 92.50, category: "💡 Utilities", desc: "Electric Bill", date: `${prevYearMonth}-09` }
+  ];
+
+  data.accounts = demoAccounts;
+  data.transactions = demoTxns;
+  currentAccountId = "__total__";
+
+  save();
+  closeOverlay("settingsOverlay");
   render();
-  openCorrectBalance();
 }
 
 function exportData() {
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: "application/json" });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement("a");
-  a.href     = url;
-  a.download = `money-tracker-${today()}.json`;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `money-tracker-backup-${today()}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
 function triggerImport() {
-  document.getElementById("importFile")?.click();
+  document.getElementById("importFileInput")?.click();
 }
 
 function importData(e) {
   const file = e.target.files[0];
   if (!file) return;
+  
   const reader = new FileReader();
   reader.onload = (ev) => {
     try {
       const imported = JSON.parse(ev.target.result);
-      if (!imported.accounts || !imported.transactions) throw new Error("Invalid format");
-      if (!confirm("This will replace all current data. Continue?")) return;
+      if (!imported.accounts || !imported.transactions) throw new Error("Invalid Format");
+      if (!confirm("This will replace all your current money-tracker data. Proceed?")) return;
       data = imported;
-      currentAccountId = data.accounts[0]?.id;
+      currentAccountId = data.accounts.length > 0 ? "__total__" : null;
       save();
+      closeOverlay("settingsOverlay");
       render();
-      alert("Import successful!");
+      alert("Database import successful!");
     } catch {
       alert("Failed to import. Make sure the file is a valid Money Tracker JSON backup.");
     }
@@ -1240,40 +2344,16 @@ function importData(e) {
   e.target.value = "";
 }
 
-function clearData() {
-  if (!confirm("Clear all data? This cannot be undone.")) return;
+function clearAllData() {
+  if (!confirm("Clear all data? This wipes the database clean. This action cannot be undone.")) return;
   data = JSON.parse(JSON.stringify(DEFAULT_DATA));
   currentAccountId = null;
   save();
+  closeOverlay("settingsOverlay");
   render();
 }
 
-// ─── Generic Prompt Sheet ────────────────────────────────────────────────────
-function openPrompt(title, label, value, inputType, callback) {
-  document.getElementById("promptTitle").textContent = title;
-  document.getElementById("promptLabel").textContent = label;
-  const inp = document.getElementById("promptInput");
-  inp.type  = inputType;
-  inp.value = value;
-  promptCallback = callback;
-  document.getElementById("promptOverlay").classList.add("open");
-  setTimeout(() => inp.focus(), 250);
-}
-
-function closePrompt() { document.getElementById("promptOverlay").classList.remove("open"); }
-function closePromptIfBg(e) { if (e.target.id === "promptOverlay") closePrompt(); }
-
-function confirmPrompt() {
-  const val = document.getElementById("promptInput").value;
-  closePrompt();
-  if (promptCallback) { promptCallback(val); promptCallback = null; }
-}
-
-document.getElementById("promptInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") confirmPrompt();
-});
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ───
 function fmt(n) {
   return "$" + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -1285,11 +2365,22 @@ function fmtDate(s) {
   return `${months[+m - 1]} ${+d}, ${y}`;
 }
 
+function fmtDateDivider(s) {
+  if (s === today()) return "Today";
+  if (s === today(-1)) return "Yesterday";
+  return fmtDate(s);
+}
+
+function fmtMonthName(m) {
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  return months[m - 1];
+}
+
 function esc(s) {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-// ─── Init ─────────────────────────────────────────────────────────────────────
+// ─── Bootstrap Init ───
 render();
 </script>
 </body>
