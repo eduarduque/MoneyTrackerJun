@@ -113,6 +113,24 @@
       border-style: dashed;
       color: var(--muted);
     }
+    .acct-pill.group-pill {
+      font-weight: 600;
+    }
+    .sub-scroll {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 6px 0 2px 10px;
+      border-left: 2px solid var(--border);
+      margin-top: 6px;
+      scrollbar-width: none;
+    }
+    .sub-scroll::-webkit-scrollbar { display: none; }
+    .acct-pill.sub {
+      font-size: 12px;
+      padding: 5px 11px;
+      color: var(--muted);
+    }
 
     /* ── Balance card ── */
     .balance-card {
@@ -298,6 +316,40 @@
       transition: opacity .15s;
     }
     .submit-btn:active { opacity: .8; }
+
+    /* ── Category chips ── */
+    .category-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .cat-chip {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cat-chip.active {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: rgba(59,130,246,.12);
+    }
+    .cat-badge {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 11px;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
 
     /* ── Transaction list ── */
     .section-header {
@@ -503,7 +555,7 @@
 <div id="app">
   <header>
     <div class="app-title">Money Tracker</div>
-    <div class="account-scroll" id="acctPills"></div>
+    <div id="acctPills"></div>
     <div class="balance-card" id="balanceCard">
       <div class="acct-actions">
         <button class="icon-btn" onclick="openRenameAccount()" title="Rename account">✏️</button>
@@ -523,6 +575,30 @@
   </header>
 
   <div class="scroll-area" id="mainContent"></div>
+</div>
+
+<!-- New Account Sheet -->
+<div class="overlay" id="newAcctOverlay" onclick="closeNewAcctIfBg(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">New Account</div>
+    <div class="field-group">
+      <label>Account Name</label>
+      <input type="text" id="newAcctName" placeholder="e.g. Checking, Savings, Cash..." />
+    </div>
+    <div class="field-group">
+      <label>Group</label>
+      <select id="newAcctParent"></select>
+    </div>
+    <div class="field-group" id="newGroupNameField" style="display:none">
+      <label>New Group Name</label>
+      <input type="text" id="newGroupName" placeholder="e.g. Chase, Bank of America..." />
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closeNewAcct()">Cancel</button>
+      <button class="btn-primary" onclick="confirmNewAcct()">Add</button>
+    </div>
+  </div>
 </div>
 
 <!-- Edit Transaction Sheet -->
@@ -553,8 +629,13 @@
     </div>
 
     <div class="field-group">
-      <label>Description</label>
-      <input type="text" id="editDesc" placeholder="e.g. Groceries, Paycheck..." />
+      <label>Category</label>
+      <div class="category-chips" id="editCategoryChips"></div>
+    </div>
+
+    <div class="field-group">
+      <label>Description (optional notes)</label>
+      <input type="text" id="editDesc" placeholder="Extra notes..." />
     </div>
 
     <div class="sheet-actions">
@@ -584,22 +665,8 @@
 <script>
 // ─── State ───────────────────────────────────────────────────────────────────
 const DEFAULT_DATA = {
-  accounts: [
-    { id: "a1", name: "Chase Checking",  balance: 200.00   },
-    { id: "a2", name: "Savings",         balance: 10000.00 },
-    { id: "a3", name: "Capital One",     balance: 3000.00  },
-    { id: "a4", name: "Cash",            balance: 150.00   }
-  ],
-  transactions: [
-    { id: "t1", accountId: "a1", type: "income",  amount: 2500, desc: "Paycheck",       date: today(-14) },
-    { id: "t2", accountId: "a1", type: "expense", amount: 1200, desc: "Rent",           date: today(-13) },
-    { id: "t3", accountId: "a1", type: "expense", amount: 85,   desc: "Groceries",      date: today(-10) },
-    { id: "t4", accountId: "a1", type: "expense", amount: 15,   desc: "Coffee",         date: today(-8)  },
-    { id: "t5", accountId: "a2", type: "income",  amount: 500,  desc: "Transfer in",    date: today(-7)  },
-    { id: "t6", accountId: "a3", type: "expense", amount: 250,  desc: "Amazon order",   date: today(-5)  },
-    { id: "t7", accountId: "a3", type: "expense", amount: 45,   desc: "Spotify + Hulu", date: today(-3)  },
-    { id: "t8", accountId: "a4", type: "expense", amount: 20,   desc: "Lunch",          date: today(-1)  },
-  ]
+  accounts: [],
+  transactions: []
 };
 
 function today(offset = 0) {
@@ -609,7 +676,7 @@ function today(offset = 0) {
 }
 
 let data = JSON.parse(localStorage.getItem("mt_data") || "null") || JSON.parse(JSON.stringify(DEFAULT_DATA));
-let currentAccountId = data.accounts[0]?.id;
+let currentAccountId = data.accounts.length > 0 ? "__total__" : null;
 let currentTab = "add";
 let editingTxId = null;
 let editType = "expense";
@@ -622,9 +689,42 @@ function save() {
 // ─── Derived ─────────────────────────────────────────────────────────────────
 function getAccount(id) { return data.accounts.find(a => a.id === id); }
 function currentAccount() { return getAccount(currentAccountId); }
+
+function leafAccounts() { return data.accounts.filter(a => !a.isGroup); }
+
+function getAccountBalance(id) {
+  const acct = getAccount(id);
+  if (!acct) return 0;
+  if (acct.isGroup) {
+    return data.accounts.filter(a => a.parentId === id).reduce((s, a) => s + (a.balance || 0), 0);
+  }
+  return acct.balance || 0;
+}
+
+function leafAccountOptions(selectedId) {
+  return leafAccounts().map(a => {
+    const parent = a.parentId ? getAccount(a.parentId) : null;
+    const label = parent ? `${esc(parent.name)} › ${esc(a.name)}` : esc(a.name);
+    return `<option value="${a.id}" ${a.id === selectedId ? "selected" : ""}>${label}</option>`;
+  }).join("");
+}
+
+function isTotalView() { return currentAccountId === "__total__"; }
+
 function currentTxns() {
+  if (isTotalView()) {
+    return [...data.transactions].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  }
+  const acct = currentAccount();
+  if (!acct) return [];
+  let ids;
+  if (acct.isGroup) {
+    ids = new Set(data.accounts.filter(a => a.parentId === acct.id).map(a => a.id));
+  } else {
+    ids = new Set([currentAccountId]);
+  }
   return data.transactions
-    .filter(t => t.accountId === currentAccountId)
+    .filter(t => ids.has(t.accountId))
     .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
 }
 
@@ -637,27 +737,66 @@ function render() {
 
 function renderPills() {
   const container = document.getElementById("acctPills");
-  container.innerHTML = data.accounts.map(a =>
-    `<button class="acct-pill ${a.id === currentAccountId ? "active" : ""}"
-       onclick="switchAccount('${a.id}')">${a.name}</button>`
-  ).join("") +
-  `<button class="acct-pill add-btn" onclick="addAccount()">+ New</button>`;
+  const acct = currentAccount();
+
+  // Determine which group's sub-accounts to show in the second row
+  let activeGroupId = null;
+  if (acct) {
+    if (acct.isGroup) activeGroupId = acct.id;
+    else if (acct.parentId) activeGroupId = acct.parentId;
+  }
+
+  // Top row: "All Accounts" + groups + standalone accounts
+  const topItems = data.accounts.filter(a => !a.parentId);
+  const totalPill = data.accounts.length
+    ? `<button class="acct-pill ${isTotalView() ? "active" : ""}" onclick="switchAccount('__total__')">All Accounts</button>`
+    : "";
+  const topPills = topItems.map(a => {
+    const isActive = !isTotalView() && (a.id === currentAccountId || acct?.parentId === a.id);
+    return `<button class="acct-pill ${isActive ? "active" : ""} ${a.isGroup ? "group-pill" : ""}" onclick="switchAccount('${a.id}')">${a.name}</button>`;
+  }).join("");
+
+  // Sub-account row
+  let subRow = "";
+  if (activeGroupId) {
+    const children = data.accounts.filter(a => a.parentId === activeGroupId);
+    const subPills = children.map(a =>
+      `<button class="acct-pill sub ${a.id === currentAccountId ? "active" : ""}" onclick="switchAccount('${a.id}')">${a.name}</button>`
+    ).join("");
+    subRow = `<div class="sub-scroll">${subPills}<button class="acct-pill sub add-btn" onclick="addAccount('${activeGroupId}')">+ Add</button></div>`;
+  }
+
+  container.innerHTML =
+    `<div class="account-scroll">${topPills}<button class="acct-pill add-btn" onclick="addAccount()">+ New</button></div>` +
+    subRow;
 }
 
 function renderBalance() {
   const acct = currentAccount();
-  if (!acct) return;
   const el = document.getElementById("balanceAmount");
-  el.textContent = fmt(acct.balance);
-  el.className = "balance-amount" + (acct.balance < 0 ? " negative" : "");
-  document.getElementById("balanceLabel").textContent = acct.name;
+  if (!acct) {
+    el.textContent = "$0.00";
+    el.className = "balance-amount";
+    document.getElementById("balanceLabel").textContent = "No accounts yet";
+    return;
+  }
+  const bal = getAccountBalance(acct.id);
+  el.textContent = fmt(bal);
+  el.className = "balance-amount" + (bal < 0 ? " negative" : "");
+  document.getElementById("balanceLabel").textContent = acct.isGroup ? `${acct.name} (total)` : acct.name;
 }
 
 function renderContent() {
   const el = document.getElementById("mainContent");
-  if (currentTab === "add")      el.innerHTML = buildAddForm();
-  else if (currentTab === "txns") el.innerHTML = buildTxnList();
-  else                            el.innerHTML = buildSettings();
+  if (currentTab === "add") {
+    el.innerHTML = buildAddForm();
+    addCategoryState = "";
+    buildCategoryChips(addTypeState, addCategoryState, "setAddCategory", "addCategoryChips");
+  } else if (currentTab === "txns") {
+    el.innerHTML = buildTxnList();
+  } else {
+    el.innerHTML = buildSettings();
+  }
 }
 
 function setTab(tab) {
@@ -670,9 +809,17 @@ function setTab(tab) {
 
 // ─── Add Form ────────────────────────────────────────────────────────────────
 function buildAddForm() {
-  const acctOptions = data.accounts.map(a =>
-    `<option value="${a.id}" ${a.id === currentAccountId ? "selected" : ""}>${a.name}</option>`
-  ).join("");
+  const leaves = leafAccounts();
+  if (!leaves.length) return `
+    <div class="empty-state">
+      <span class="emoji">🏦</span>
+      No accounts yet.<br/>Tap <b>+ New</b> above to add one.
+    </div>`;
+
+  const curAcct = currentAccount();
+  const defaultId = (!curAcct || curAcct.isGroup)
+    ? (curAcct ? data.accounts.find(a => a.parentId === curAcct.id)?.id : null) ?? leaves[0].id
+    : currentAccountId;
 
   return `
   <div class="form-card">
@@ -689,7 +836,7 @@ function buildAddForm() {
     <div class="row-2">
       <div class="field-group">
         <label>Account</label>
-        <select id="addAccount">${acctOptions}</select>
+        <select id="addAccount">${leafAccountOptions(defaultId)}</select>
       </div>
       <div class="field-group">
         <label>Date</label>
@@ -698,35 +845,74 @@ function buildAddForm() {
     </div>
 
     <div class="field-group">
-      <label>Description</label>
-      <input type="text" id="addDesc" placeholder="e.g. Groceries, Paycheck..." />
+      <label>Category</label>
+      <div class="category-chips" id="addCategoryChips"></div>
+    </div>
+
+    <div class="field-group">
+      <label>Description (optional notes)</label>
+      <input type="text" id="addDesc" placeholder="Extra notes..." />
     </div>
 
     <button class="submit-btn" onclick="submitTransaction()">Add Transaction</button>
   </div>`;
 }
 
+const EXPENSE_CATEGORIES = [
+  "🛒 Groceries","⛽ Gas","🍽️ Dining","🏠 Rent","🛍️ Shopping",
+  "📚 Education","🎬 Entertainment","💊 Healthcare","🚌 Transport",
+  "💡 Utilities","📱 Subscriptions","✈️ Travel","💰 Savings","📝 Other"
+];
+const INCOME_CATEGORIES = [
+  "💵 Paycheck","💸 Transfer","🎁 Gift","💹 Investment","🏦 Deposit","📝 Other"
+];
+
 let addTypeState = "income";
+let addCategoryState = "";
+let editCategoryState = "";
+
+function buildCategoryChips(type, selected, onClickFn, containerId) {
+  const cats = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = cats.map(c =>
+    `<button type="button" class="cat-chip ${c === selected ? "active" : ""}" onclick="${onClickFn}('${c.replace(/'/g,"\\'")}', '${containerId}')">${c}</button>`
+  ).join("");
+}
+
+function setAddCategory(cat, containerId) {
+  addCategoryState = addCategoryState === cat ? "" : cat;
+  buildCategoryChips(addTypeState, addCategoryState, "setAddCategory", containerId);
+}
+
+function setEditCategory(cat, containerId) {
+  editCategoryState = editCategoryState === cat ? "" : cat;
+  buildCategoryChips(editType, editCategoryState, "setEditCategory", containerId);
+}
 
 function setAddType(type) {
   addTypeState = type;
+  addCategoryState = "";
   document.getElementById("addTypeIncome") ?.classList.toggle("active", type === "income");
   document.getElementById("addTypeExpense")?.classList.toggle("active", type === "expense");
+  buildCategoryChips(type, addCategoryState, "setAddCategory", "addCategoryChips");
 }
 
 function submitTransaction() {
   const amount = parseFloat(document.getElementById("addAmount").value);
-  const desc   = document.getElementById("addDesc").value.trim() || "Unnamed";
+  const desc   = document.getElementById("addDesc").value.trim();
   const acctId = document.getElementById("addAccount").value;
   const date   = document.getElementById("addDate").value || today();
 
   if (!amount || amount <= 0) { alert("Enter a valid amount."); return; }
+  if (!addCategoryState && !desc) { alert("Select a category or enter a description."); return; }
 
   const tx = {
     id: "t" + Date.now(),
     accountId: acctId,
     type: addTypeState,
     amount,
+    category: addCategoryState,
     desc,
     date
   };
@@ -749,15 +935,20 @@ function buildTxnList() {
       No transactions yet.<br/>Tap <b>+ Add</b> to log one.
     </div>`;
 
+  const isGroupView = currentAccount()?.isGroup;
   const items = txns.map(t => {
     const icon = t.type === "income" ? "↑" : "↓";
     const sign = t.type === "income" ? "+" : "−";
+    const subAcctName = isGroupView ? ` · ${esc(getAccount(t.accountId)?.name ?? "")}` : "";
+    const label = t.category || t.desc || "Unnamed";
+    const notesLine = (t.category && t.desc) ? `<div class="tx-meta" style="margin-top:1px">${esc(t.desc)}</div>` : "";
     return `
     <div class="tx-item" onclick="openEdit('${t.id}')">
       <div class="tx-icon ${t.type}">${icon}</div>
       <div class="tx-info">
-        <div class="tx-desc">${esc(t.desc)}</div>
-        <div class="tx-meta">${fmtDate(t.date)}</div>
+        <div class="tx-desc">${esc(label)}</div>
+        <div class="tx-meta">${fmtDate(t.date)}${subAcctName}</div>
+        ${notesLine}
       </div>
       <div class="tx-amount ${t.type}">${sign}${fmt(t.amount)}</div>
     </div>`;
@@ -775,25 +966,27 @@ function openEdit(txId) {
   editingTxId = txId;
   editType = tx.type;
 
+  editCategoryState = tx.category || "";
   document.getElementById("editAmount").value  = tx.amount;
-  document.getElementById("editDesc").value    = tx.desc;
+  document.getElementById("editDesc").value    = tx.desc || "";
   document.getElementById("editDate").value    = tx.date;
 
   const acctSel = document.getElementById("editAccount");
-  acctSel.innerHTML = data.accounts.map(a =>
-    `<option value="${a.id}" ${a.id === tx.accountId ? "selected" : ""}>${a.name}</option>`
-  ).join("");
+  acctSel.innerHTML = leafAccountOptions(tx.accountId);
 
   document.getElementById("editTypeIncome") .classList.toggle("active", tx.type === "income");
   document.getElementById("editTypeExpense").classList.toggle("active", tx.type === "expense");
+  buildCategoryChips(tx.type, editCategoryState, "setEditCategory", "editCategoryChips");
 
   document.getElementById("editOverlay").classList.add("open");
 }
 
 function setEditType(type) {
   editType = type;
+  editCategoryState = "";
   document.getElementById("editTypeIncome") .classList.toggle("active", type === "income");
   document.getElementById("editTypeExpense").classList.toggle("active", type === "expense");
+  buildCategoryChips(type, editCategoryState, "setEditCategory", "editCategoryChips");
 }
 
 function closeEdit() { document.getElementById("editOverlay").classList.remove("open"); }
@@ -804,7 +997,7 @@ function saveEditTransaction() {
   if (!tx) return;
 
   const newAmount  = parseFloat(document.getElementById("editAmount").value);
-  const newDesc    = document.getElementById("editDesc").value.trim() || "Unnamed";
+  const newDesc    = document.getElementById("editDesc").value.trim();
   const newAcctId  = document.getElementById("editAccount").value;
   const newDate    = document.getElementById("editDate").value || today();
 
@@ -817,6 +1010,7 @@ function saveEditTransaction() {
   // Apply new effect
   tx.type      = editType;
   tx.amount    = newAmount;
+  tx.category  = editCategoryState;
   tx.desc      = newDesc;
   tx.accountId = newAcctId;
   tx.date      = newDate;
@@ -846,6 +1040,8 @@ function deleteTransaction() {
 // ─── Correct Balance ──────────────────────────────────────────────────────────
 function openCorrectBalance() {
   const acct = currentAccount();
+  if (!acct) return;
+  if (acct.isGroup) { alert("Select a specific sub-account to correct its balance."); return; }
   openPrompt(
     "Correct Balance",
     `New balance for ${acct.name} ($)`,
@@ -862,15 +1058,48 @@ function openCorrectBalance() {
 }
 
 // ─── Account management ───────────────────────────────────────────────────────
-function addAccount() {
-  openPrompt("New Account", "Account name", "", "text", (name) => {
-    if (!name.trim()) return;
-    const id = "a" + Date.now();
-    data.accounts.push({ id, name: name.trim(), balance: 0 });
-    currentAccountId = id;
-    save();
-    render();
-  });
+function addAccount(preselectedGroupId = null) {
+  const sel = document.getElementById("newAcctParent");
+  const groups = data.accounts.filter(a => a.isGroup);
+  sel.innerHTML =
+    `<option value="">— Standalone account —</option>` +
+    groups.map(g => `<option value="${g.id}">${g.name}</option>`).join("") +
+    `<option value="__new__">+ Create new group…</option>`;
+  if (preselectedGroupId) sel.value = preselectedGroupId;
+  document.getElementById("newAcctName").value = "";
+  document.getElementById("newGroupName").value = "";
+  document.getElementById("newGroupNameField").style.display = preselectedGroupId ? "none" : "none";
+  document.getElementById("newAcctOverlay").classList.add("open");
+  setTimeout(() => document.getElementById("newAcctName").focus(), 250);
+}
+
+function closeNewAcct() { document.getElementById("newAcctOverlay").classList.remove("open"); }
+function closeNewAcctIfBg(e) { if (e.target.id === "newAcctOverlay") closeNewAcct(); }
+
+document.getElementById("newAcctParent").addEventListener("change", function () {
+  document.getElementById("newGroupNameField").style.display = this.value === "__new__" ? "" : "none";
+});
+
+function confirmNewAcct() {
+  const name = document.getElementById("newAcctName").value.trim();
+  if (!name) { alert("Enter an account name."); return; }
+
+  let parentId = document.getElementById("newAcctParent").value;
+
+  if (parentId === "__new__") {
+    const groupName = document.getElementById("newGroupName").value.trim();
+    if (!groupName) { alert("Enter a group name."); return; }
+    const gid = "g" + Date.now();
+    data.accounts.push({ id: gid, name: groupName, parentId: null, isGroup: true });
+    parentId = gid;
+  }
+
+  const id = "a" + (Date.now() + 1);
+  data.accounts.push({ id, name, parentId: parentId || null, isGroup: false, balance: 0 });
+  currentAccountId = id;
+  save();
+  closeNewAcct();
+  render();
 }
 
 function switchAccount(id) {
@@ -880,6 +1109,7 @@ function switchAccount(id) {
 
 function openRenameAccount() {
   const acct = currentAccount();
+  if (!acct) return;
   openPrompt("Rename Account", "New name", acct.name, "text", (name) => {
     if (!name.trim()) return;
     acct.name = name.trim();
@@ -890,26 +1120,47 @@ function openRenameAccount() {
 
 function confirmDeleteAccount() {
   const acct = currentAccount();
-  if (data.accounts.length === 1) { alert("You must have at least one account."); return; }
-  if (!confirm(`Delete "${acct.name}" and all its transactions?`)) return;
-  data.transactions = data.transactions.filter(t => t.accountId !== acct.id);
-  data.accounts = data.accounts.filter(a => a.id !== acct.id);
-  currentAccountId = data.accounts[0].id;
+  if (!acct) return;
+  if (acct.isGroup) {
+    const children = data.accounts.filter(a => a.parentId === acct.id);
+    const msg = children.length
+      ? `Delete "${acct.name}" group and its ${children.length} sub-account(s) with all their transactions?`
+      : `Delete "${acct.name}" group?`;
+    if (!confirm(msg)) return;
+    const childIds = new Set(children.map(c => c.id));
+    data.transactions = data.transactions.filter(t => !childIds.has(t.accountId));
+    data.accounts = data.accounts.filter(a => a.id !== acct.id && a.parentId !== acct.id);
+  } else {
+    if (!confirm(`Delete "${acct.name}" and all its transactions?`)) return;
+    data.transactions = data.transactions.filter(t => t.accountId !== acct.id);
+    data.accounts = data.accounts.filter(a => a.id !== acct.id);
+  }
+  currentAccountId = data.accounts[0]?.id ?? null;
   save();
   render();
 }
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
 function buildSettings() {
-  const accts = data.accounts.map(a =>
-    `<div class="settings-row">
+  const accts = data.accounts.map(a => {
+    if (a.isGroup) {
+      return `<div class="settings-row">
+        <div>
+          <div class="settings-label">📁 ${esc(a.name)}</div>
+          <div class="settings-sub">${fmt(getAccountBalance(a.id))} total</div>
+        </div>
+      </div>`;
+    }
+    const parent = a.parentId ? getAccount(a.parentId) : null;
+    const label = parent ? `${esc(parent.name)} › ${esc(a.name)}` : esc(a.name);
+    return `<div class="settings-row">
       <div>
-        <div class="settings-label">${esc(a.name)}</div>
-        <div class="settings-sub">${fmt(a.balance)}</div>
+        <div class="settings-label">${label}</div>
+        <div class="settings-sub">${fmt(a.balance || 0)}</div>
       </div>
       <button class="action-btn" onclick="switchAndCorrect('${a.id}')">Edit Balance</button>
-    </div>`
-  ).join("");
+    </div>`;
+  }).join("");
 
   return `
   <div class="settings-section">
@@ -948,8 +1199,8 @@ function buildSettings() {
 
 function switchAndCorrect(id) {
   currentAccountId = id;
-  openCorrectBalance();
   render();
+  openCorrectBalance();
 }
 
 function exportData() {
@@ -990,9 +1241,9 @@ function importData(e) {
 }
 
 function clearData() {
-  if (!confirm("Reset everything to defaults? This cannot be undone.")) return;
+  if (!confirm("Clear all data? This cannot be undone.")) return;
   data = JSON.parse(JSON.stringify(DEFAULT_DATA));
-  currentAccountId = data.accounts[0].id;
+  currentAccountId = null;
   save();
   render();
 }
