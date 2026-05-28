@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Money" />
+  <meta name="theme-color" content="#0f0f0f" />
+  <meta name="description" content="Lightweight personal money tracker" />
+  <title>Money Tracker</title>
+
+  <!-- Inline PWA manifest -->
+  <script>
+    const manifestData = {
+      name: "Money Tracker",
+      short_name: "Money",
+      description: "Lightweight personal money tracker",
+      start_url: "./",
+      display: "standalone",
+      background_color: "#0f0f0f",
+      theme_color: "#0f0f0f",
+      icons: [
+        { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2322c55e'/%3E%3Ctext y='.9em' font-size='80' x='10'%3E💵%3C/text%3E%3C/svg%3E", sizes: "any", type: "image/svg+xml" }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(manifestData)], { type: "application/json" });
+    const manifestURL = URL.createObjectURL(blob);
+    document.write(`<link rel="manifest" href="${manifestURL}" />`);
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f0f0f;
+      --surface:  #1a1a1a;
+      --surface2: #242424;
+      --border:   #2e2e2e;
+      --text:     #f0f0f0;
+      --muted:    #888;
+      --green:    #22c55e;
+      --red:      #ef4444;
+      --blue:     #3b82f6;
+      --amber:    #f59e0b;
+      --radius:   14px;
+      --safe-b:   env(safe-area-inset-bottom, 0px);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      overflow: hidden;
+    }
+
+    /* ── Layout ── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 20px 16px 0;
+      flex-shrink: 0;
+    }
+
+    .app-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* ── Account pill row ── */
+    .account-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .account-scroll::-webkit-scrollbar { display: none; }
+
+    .acct-pill {
+      flex-shrink: 0;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .acct-pill.active {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(34,197,94,.1);
+    }
+    .acct-pill.add-btn {
+      border-style: dashed;
+      color: var(--muted);
+    }
+
+    /* ── Balance card ── */
+    .balance-card {
+      margin: 16px 0 0;
+      padding: 20px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    .balance-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 6px;
+    }
+
+    .balance-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .balance-amount {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .balance-amount.negative { color: var(--red); }
+
+    .balance-edit-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+    .balance-edit-btn:active { opacity: .7; }
+
+    .acct-actions {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .icon-btn:active { background: var(--surface2); }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      margin-top: 16px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 9px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tab.active {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    /* ── Scroll area ── */
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+      padding-bottom: calc(16px + var(--safe-b));
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    /* ── Add form ── */
+    .form-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .type-toggle {
+      display: flex;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 3px;
+    }
+
+    .type-btn {
+      flex: 1;
+      padding: 9px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      color: var(--muted);
+    }
+    .type-btn.income.active  { background: rgba(34,197,94,.2);  color: var(--green); }
+    .type-btn.expense.active { background: rgba(239,68,68,.2);  color: var(--red);   }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--blue);
+    }
+
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: var(--green);
+      color: #000;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .submit-btn:active { opacity: .8; }
+
+    /* ── Transaction list ── */
+    .section-header {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      padding: 4px 0 8px;
+    }
+
+    .tx-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tx-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tx-item:active { border-color: var(--blue); }
+
+    .tx-icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .tx-icon.income  { background: rgba(34,197,94,.15); }
+    .tx-icon.expense { background: rgba(239,68,68,.15); }
+
+    .tx-info { flex: 1; min-width: 0; }
+    .tx-desc {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tx-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .tx-amount {
+      font-size: 15px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .tx-amount.income  { color: var(--green); }
+    .tx-amount.expense { color: var(--red);   }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      padding: 48px 0;
+      font-size: 14px;
+    }
+    .empty-state .emoji { font-size: 40px; display: block; margin-bottom: 10px; }
+
+    /* ── Settings tab ── */
+    .settings-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .settings-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .settings-row:last-child { border-bottom: none; }
+
+    .settings-label { font-size: 14px; font-weight: 500; }
+    .settings-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .action-btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+    .action-btn:active { opacity: .7; }
+    .action-btn.danger { border-color: var(--red); color: var(--red); }
+
+    /* ── Modal overlay ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 0 var(--safe-b);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s;
+    }
+    .overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .sheet {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      border: 1px solid var(--border);
+      padding: 20px 16px;
+      padding-bottom: calc(20px + var(--safe-b));
+      transform: translateY(30px);
+      transition: transform .2s;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .overlay.open .sheet { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 40px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0 auto -6px;
+    }
+
+    .sheet-title {
+      font-size: 17px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .sheet-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: var(--blue);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-danger {
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: none;
+      background: rgba(239,68,68,.15);
+      color: var(--red);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-cancel {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <div class="app-title">Money Tracker</div>
+    <div class="account-scroll" id="acctPills"></div>
+    <div class="balance-card" id="balanceCard">
+      <div class="acct-actions">
+        <button class="icon-btn" onclick="openRenameAccount()" title="Rename account">✏️</button>
+        <button class="icon-btn" onclick="confirmDeleteAccount()" title="Delete account">🗑️</button>
+      </div>
+      <div class="balance-label" id="balanceLabel">Total Balance</div>
+      <div class="balance-row">
+        <div class="balance-amount" id="balanceAmount">$0.00</div>
+        <button class="balance-edit-btn" onclick="openCorrectBalance()">Correct Balance</button>
+      </div>
+    </div>
+    <div class="tabs" style="margin: 12px 0 0;">
+      <button class="tab active" onclick="setTab('add')">+ Add</button>
+      <button class="tab" onclick="setTab('txns')">Transactions</button>
+      <button class="tab" onclick="setTab('settings')">Settings</button>
+    </div>
+  </header>
+
+  <div class="scroll-area" id="mainContent"></div>
+</div>
+
+<!-- Edit Transaction Sheet -->
+<div class="overlay" id="editOverlay" onclick="closeEditIfBg(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Edit Transaction</div>
+
+    <div class="type-toggle">
+      <button class="type-btn income" id="editTypeIncome" onclick="setEditType('income')">↑ Income</button>
+      <button class="type-btn expense" id="editTypeExpense" onclick="setEditType('expense')">↓ Expense</button>
+    </div>
+
+    <div class="field-group">
+      <label>Amount ($)</label>
+      <input type="number" id="editAmount" placeholder="0.00" step="0.01" min="0" inputmode="decimal" />
+    </div>
+
+    <div class="row-2">
+      <div class="field-group">
+        <label>Account</label>
+        <select id="editAccount"></select>
+      </div>
+      <div class="field-group">
+        <label>Date</label>
+        <input type="date" id="editDate" />
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Description</label>
+      <input type="text" id="editDesc" placeholder="e.g. Groceries, Paycheck..." />
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closeEdit()">Cancel</button>
+      <button class="btn-danger" onclick="deleteTransaction()">Delete</button>
+      <button class="btn-primary" onclick="saveEditTransaction()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Generic prompt sheet -->
+<div class="overlay" id="promptOverlay" onclick="closePromptIfBg(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="promptTitle">Enter value</div>
+    <div class="field-group">
+      <label id="promptLabel">Value</label>
+      <input id="promptInput" type="text" />
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closePrompt()">Cancel</button>
+      <button class="btn-primary" onclick="confirmPrompt()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+const DEFAULT_DATA = {
+  accounts: [
+    { id: "a1", name: "Chase Checking",  balance: 200.00   },
+    { id: "a2", name: "Savings",         balance: 10000.00 },
+    { id: "a3", name: "Capital One",     balance: 3000.00  },
+    { id: "a4", name: "Cash",            balance: 150.00   }
+  ],
+  transactions: [
+    { id: "t1", accountId: "a1", type: "income",  amount: 2500, desc: "Paycheck",       date: today(-14) },
+    { id: "t2", accountId: "a1", type: "expense", amount: 1200, desc: "Rent",           date: today(-13) },
+    { id: "t3", accountId: "a1", type: "expense", amount: 85,   desc: "Groceries",      date: today(-10) },
+    { id: "t4", accountId: "a1", type: "expense", amount: 15,   desc: "Coffee",         date: today(-8)  },
+    { id: "t5", accountId: "a2", type: "income",  amount: 500,  desc: "Transfer in",    date: today(-7)  },
+    { id: "t6", accountId: "a3", type: "expense", amount: 250,  desc: "Amazon order",   date: today(-5)  },
+    { id: "t7", accountId: "a3", type: "expense", amount: 45,   desc: "Spotify + Hulu", date: today(-3)  },
+    { id: "t8", accountId: "a4", type: "expense", amount: 20,   desc: "Lunch",          date: today(-1)  },
+  ]
+};
+
+function today(offset = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().slice(0, 10);
+}
+
+let data = JSON.parse(localStorage.getItem("mt_data") || "null") || JSON.parse(JSON.stringify(DEFAULT_DATA));
+let currentAccountId = data.accounts[0]?.id;
+let currentTab = "add";
+let editingTxId = null;
+let editType = "expense";
+let promptCallback = null;
+
+function save() {
+  localStorage.setItem("mt_data", JSON.stringify(data));
+}
+
+// ─── Derived ─────────────────────────────────────────────────────────────────
+function getAccount(id) { return data.accounts.find(a => a.id === id); }
+function currentAccount() { return getAccount(currentAccountId); }
+function currentTxns() {
+  return data.transactions
+    .filter(t => t.accountId === currentAccountId)
+    .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function render() {
+  renderPills();
+  renderBalance();
+  renderContent();
+}
+
+function renderPills() {
+  const container = document.getElementById("acctPills");
+  container.innerHTML = data.accounts.map(a =>
+    `<button class="acct-pill ${a.id === currentAccountId ? "active" : ""}"
+       onclick="switchAccount('${a.id}')">${a.name}</button>`
+  ).join("") +
+  `<button class="acct-pill add-btn" onclick="addAccount()">+ New</button>`;
+}
+
+function renderBalance() {
+  const acct = currentAccount();
+  if (!acct) return;
+  const el = document.getElementById("balanceAmount");
+  el.textContent = fmt(acct.balance);
+  el.className = "balance-amount" + (acct.balance < 0 ? " negative" : "");
+  document.getElementById("balanceLabel").textContent = acct.name;
+}
+
+function renderContent() {
+  const el = document.getElementById("mainContent");
+  if (currentTab === "add")      el.innerHTML = buildAddForm();
+  else if (currentTab === "txns") el.innerHTML = buildTxnList();
+  else                            el.innerHTML = buildSettings();
+}
+
+function setTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll(".tab").forEach((t, i) => {
+    t.classList.toggle("active", ["add","txns","settings"][i] === tab);
+  });
+  renderContent();
+}
+
+// ─── Add Form ────────────────────────────────────────────────────────────────
+function buildAddForm() {
+  const acctOptions = data.accounts.map(a =>
+    `<option value="${a.id}" ${a.id === currentAccountId ? "selected" : ""}>${a.name}</option>`
+  ).join("");
+
+  return `
+  <div class="form-card">
+    <div class="type-toggle">
+      <button class="type-btn income active" id="addTypeIncome"  onclick="setAddType('income')">↑ Income</button>
+      <button class="type-btn expense"       id="addTypeExpense" onclick="setAddType('expense')">↓ Expense</button>
+    </div>
+
+    <div class="field-group">
+      <label>Amount ($)</label>
+      <input type="number" id="addAmount" placeholder="0.00" step="0.01" min="0" inputmode="decimal" />
+    </div>
+
+    <div class="row-2">
+      <div class="field-group">
+        <label>Account</label>
+        <select id="addAccount">${acctOptions}</select>
+      </div>
+      <div class="field-group">
+        <label>Date</label>
+        <input type="date" id="addDate" value="${today()}" />
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Description</label>
+      <input type="text" id="addDesc" placeholder="e.g. Groceries, Paycheck..." />
+    </div>
+
+    <button class="submit-btn" onclick="submitTransaction()">Add Transaction</button>
+  </div>`;
+}
+
+let addTypeState = "income";
+
+function setAddType(type) {
+  addTypeState = type;
+  document.getElementById("addTypeIncome") ?.classList.toggle("active", type === "income");
+  document.getElementById("addTypeExpense")?.classList.toggle("active", type === "expense");
+}
+
+function submitTransaction() {
+  const amount = parseFloat(document.getElementById("addAmount").value);
+  const desc   = document.getElementById("addDesc").value.trim() || "Unnamed";
+  const acctId = document.getElementById("addAccount").value;
+  const date   = document.getElementById("addDate").value || today();
+
+  if (!amount || amount <= 0) { alert("Enter a valid amount."); return; }
+
+  const tx = {
+    id: "t" + Date.now(),
+    accountId: acctId,
+    type: addTypeState,
+    amount,
+    desc,
+    date
+  };
+
+  data.transactions.push(tx);
+  const acct = getAccount(acctId);
+  acct.balance += (addTypeState === "income" ? 1 : -1) * amount;
+  save();
+  currentAccountId = acctId;
+  setTab("txns");
+  render();
+}
+
+// ─── Transaction List ─────────────────────────────────────────────────────────
+function buildTxnList() {
+  const txns = currentTxns();
+  if (!txns.length) return `
+    <div class="empty-state">
+      <span class="emoji">📭</span>
+      No transactions yet.<br/>Tap <b>+ Add</b> to log one.
+    </div>`;
+
+  const items = txns.map(t => {
+    const icon = t.type === "income" ? "↑" : "↓";
+    const sign = t.type === "income" ? "+" : "−";
+    return `
+    <div class="tx-item" onclick="openEdit('${t.id}')">
+      <div class="tx-icon ${t.type}">${icon}</div>
+      <div class="tx-info">
+        <div class="tx-desc">${esc(t.desc)}</div>
+        <div class="tx-meta">${fmtDate(t.date)}</div>
+      </div>
+      <div class="tx-amount ${t.type}">${sign}${fmt(t.amount)}</div>
+    </div>`;
+  }).join("");
+
+  return `
+    <div class="section-header">${txns.length} transaction${txns.length !== 1 ? "s" : ""}</div>
+    <div class="tx-list">${items}</div>`;
+}
+
+// ─── Edit Sheet ───────────────────────────────────────────────────────────────
+function openEdit(txId) {
+  const tx = data.transactions.find(t => t.id === txId);
+  if (!tx) return;
+  editingTxId = txId;
+  editType = tx.type;
+
+  document.getElementById("editAmount").value  = tx.amount;
+  document.getElementById("editDesc").value    = tx.desc;
+  document.getElementById("editDate").value    = tx.date;
+
+  const acctSel = document.getElementById("editAccount");
+  acctSel.innerHTML = data.accounts.map(a =>
+    `<option value="${a.id}" ${a.id === tx.accountId ? "selected" : ""}>${a.name}</option>`
+  ).join("");
+
+  document.getElementById("editTypeIncome") .classList.toggle("active", tx.type === "income");
+  document.getElementById("editTypeExpense").classList.toggle("active", tx.type === "expense");
+
+  document.getElementById("editOverlay").classList.add("open");
+}
+
+function setEditType(type) {
+  editType = type;
+  document.getElementById("editTypeIncome") .classList.toggle("active", type === "income");
+  document.getElementById("editTypeExpense").classList.toggle("active", type === "expense");
+}
+
+function closeEdit() { document.getElementById("editOverlay").classList.remove("open"); }
+function closeEditIfBg(e) { if (e.target.id === "editOverlay") closeEdit(); }
+
+function saveEditTransaction() {
+  const tx = data.transactions.find(t => t.id === editingTxId);
+  if (!tx) return;
+
+  const newAmount  = parseFloat(document.getElementById("editAmount").value);
+  const newDesc    = document.getElementById("editDesc").value.trim() || "Unnamed";
+  const newAcctId  = document.getElementById("editAccount").value;
+  const newDate    = document.getElementById("editDate").value || today();
+
+  if (!newAmount || newAmount <= 0) { alert("Enter a valid amount."); return; }
+
+  // Reverse old effect
+  const oldAcct = getAccount(tx.accountId);
+  oldAcct.balance -= (tx.type === "income" ? 1 : -1) * tx.amount;
+
+  // Apply new effect
+  tx.type      = editType;
+  tx.amount    = newAmount;
+  tx.desc      = newDesc;
+  tx.accountId = newAcctId;
+  tx.date      = newDate;
+
+  const newAcct = getAccount(newAcctId);
+  newAcct.balance += (editType === "income" ? 1 : -1) * newAmount;
+
+  save();
+  closeEdit();
+  render();
+}
+
+function deleteTransaction() {
+  if (!confirm("Delete this transaction?")) return;
+  const tx = data.transactions.find(t => t.id === editingTxId);
+  if (!tx) return;
+
+  const acct = getAccount(tx.accountId);
+  acct.balance -= (tx.type === "income" ? 1 : -1) * tx.amount;
+
+  data.transactions = data.transactions.filter(t => t.id !== editingTxId);
+  save();
+  closeEdit();
+  render();
+}
+
+// ─── Correct Balance ──────────────────────────────────────────────────────────
+function openCorrectBalance() {
+  const acct = currentAccount();
+  openPrompt(
+    "Correct Balance",
+    `New balance for ${acct.name} ($)`,
+    String(acct.balance),
+    "number",
+    (val) => {
+      const n = parseFloat(val);
+      if (isNaN(n)) { alert("Enter a valid number."); return; }
+      acct.balance = n;
+      save();
+      renderBalance();
+    }
+  );
+}
+
+// ─── Account management ───────────────────────────────────────────────────────
+function addAccount() {
+  openPrompt("New Account", "Account name", "", "text", (name) => {
+    if (!name.trim()) return;
+    const id = "a" + Date.now();
+    data.accounts.push({ id, name: name.trim(), balance: 0 });
+    currentAccountId = id;
+    save();
+    render();
+  });
+}
+
+function switchAccount(id) {
+  currentAccountId = id;
+  render();
+}
+
+function openRenameAccount() {
+  const acct = currentAccount();
+  openPrompt("Rename Account", "New name", acct.name, "text", (name) => {
+    if (!name.trim()) return;
+    acct.name = name.trim();
+    save();
+    render();
+  });
+}
+
+function confirmDeleteAccount() {
+  const acct = currentAccount();
+  if (data.accounts.length === 1) { alert("You must have at least one account."); return; }
+  if (!confirm(`Delete "${acct.name}" and all its transactions?`)) return;
+  data.transactions = data.transactions.filter(t => t.accountId !== acct.id);
+  data.accounts = data.accounts.filter(a => a.id !== acct.id);
+  currentAccountId = data.accounts[0].id;
+  save();
+  render();
+}
+
+// ─── Settings ─────────────────────────────────────────────────────────────────
+function buildSettings() {
+  const accts = data.accounts.map(a =>
+    `<div class="settings-row">
+      <div>
+        <div class="settings-label">${esc(a.name)}</div>
+        <div class="settings-sub">${fmt(a.balance)}</div>
+      </div>
+      <button class="action-btn" onclick="switchAndCorrect('${a.id}')">Edit Balance</button>
+    </div>`
+  ).join("");
+
+  return `
+  <div class="settings-section">
+    <div class="settings-card">
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Export Data</div>
+          <div class="settings-sub">Download all accounts & transactions as JSON</div>
+        </div>
+        <button class="action-btn" onclick="exportData()">Export</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Import Data</div>
+          <div class="settings-sub">Restore from a JSON backup file</div>
+        </div>
+        <button class="action-btn" onclick="triggerImport()">Import</button>
+      </div>
+    </div>
+
+    <div style="font-size:12px;color:var(--muted);padding:0 2px;">Account Balances</div>
+    <div class="settings-card">${accts}</div>
+
+    <div class="settings-card">
+      <div class="settings-row">
+        <div>
+          <div class="settings-label" style="color:var(--red)">Clear All Data</div>
+          <div class="settings-sub">Wipes everything and reloads defaults</div>
+        </div>
+        <button class="action-btn danger" onclick="clearData()">Reset</button>
+      </div>
+    </div>
+  </div>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />`;
+}
+
+function switchAndCorrect(id) {
+  currentAccountId = id;
+  openCorrectBalance();
+  render();
+}
+
+function exportData() {
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `money-tracker-${today()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function triggerImport() {
+  document.getElementById("importFile")?.click();
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!imported.accounts || !imported.transactions) throw new Error("Invalid format");
+      if (!confirm("This will replace all current data. Continue?")) return;
+      data = imported;
+      currentAccountId = data.accounts[0]?.id;
+      save();
+      render();
+      alert("Import successful!");
+    } catch {
+      alert("Failed to import. Make sure the file is a valid Money Tracker JSON backup.");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+}
+
+function clearData() {
+  if (!confirm("Reset everything to defaults? This cannot be undone.")) return;
+  data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  currentAccountId = data.accounts[0].id;
+  save();
+  render();
+}
+
+// ─── Generic Prompt Sheet ────────────────────────────────────────────────────
+function openPrompt(title, label, value, inputType, callback) {
+  document.getElementById("promptTitle").textContent = title;
+  document.getElementById("promptLabel").textContent = label;
+  const inp = document.getElementById("promptInput");
+  inp.type  = inputType;
+  inp.value = value;
+  promptCallback = callback;
+  document.getElementById("promptOverlay").classList.add("open");
+  setTimeout(() => inp.focus(), 250);
+}
+
+function closePrompt() { document.getElementById("promptOverlay").classList.remove("open"); }
+function closePromptIfBg(e) { if (e.target.id === "promptOverlay") closePrompt(); }
+
+function confirmPrompt() {
+  const val = document.getElementById("promptInput").value;
+  closePrompt();
+  if (promptCallback) { promptCallback(val); promptCallback = null; }
+}
+
+document.getElementById("promptInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") confirmPrompt();
+});
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function fmt(n) {
+  return "$" + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtDate(s) {
+  if (!s) return "";
+  const [y, m, d] = s.split("-");
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${months[+m - 1]} ${+d}, ${y}`;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
